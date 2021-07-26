@@ -9,6 +9,7 @@ Contains decoder architectures
 import torch
 import torch.backends.cudnn
 import numpy as np
+import math
 from torch import nn
 from torch.nn import functional as F
 import pickle
@@ -19,6 +20,11 @@ class Standard_Decoder(nn.Module):
     def __init__(self, tg, show_summary=True):
         super(Standard_Decoder, self).__init__()
         self.input_shape = tg.input_shape
+
+        if not math.log(self.input_shape[1], 2).is_integer():
+            print("ERROR: Number of timesteps must be a power of 2.")
+            exit(0)
+
         self.target_names = list(tg.loss_functions.keys())
         self.conv_order = []
 
@@ -93,6 +99,15 @@ class Standard_Decoder(nn.Module):
         # Flatten and fc
         self.flatten = TimeDistributedFlatten()
         self.fc_orders = []
+
+        # ..todo: fix input size of less than 64 time steps
+        if self.input_shape[1] < 64:
+            H = 1
+        if self.input_shape[1] == 512:
+            H = 3
+        if self.input_shape[1] == 1024:
+            H = 5
+
         for key, output in zip(tg.loss_functions.keys(), tg.outputs):
             fc_order = []
             initial_in_channels = 256 * H #..todo: should not be hardcoded!

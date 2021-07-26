@@ -25,7 +25,8 @@ def get_opts(fp_hdf_out, train_test_times):
 
     # -------- MODEL PARAMETERS --------------
     opts['model_function'] = 'Standard_Decoder'  # Model architecture used
-    opts['model_timesteps'] = 64  # How many timesteps are used in the input layer, e.g. a sampling rate of 30 will yield 2.13s windows. Has to be divisible X times by 2. X='num_convs_tsr'
+    opts['model_timesteps'] = 2**9
+    # 32 #64  # How many timesteps are used in the input layer, e.g. a sampling rate of 30 will yield 2.13s windows. Has to be divisible X times by 2. X='num_convs_tsr'
     opts['num_convs_tsr'] = 5  # Number of downsampling steps within the model, e.g. with model_timesteps=64, it will downsample 64->32->16->8->4 and output 4 timesteps
     opts['average_output'] = 2**opts['num_convs_tsr']  # Whats the ratio between input and output shape
 
