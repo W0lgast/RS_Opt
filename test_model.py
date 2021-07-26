@@ -18,6 +18,7 @@ import torch
 import wandb
 import matplotlib.pyplot as plt
 import imageio
+from utils.plotting import circular_hist
 
 # -----------------------------------------------------------------------
 
@@ -29,8 +30,8 @@ else:
 takeout = False
 
 #PREPROCESSED_HDF5_PATH = './data/processed_R2478.h5'
-PREPROCESSED_HDF5_PATH = 'data/A.h5'
-MODEL_PATH = 'models/A.pt'
+PREPROCESSED_HDF5_PATH = 'data/Gerrit.h5'
+MODEL_PATH = 'models/Gerrit.pt'
 
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
@@ -214,11 +215,11 @@ with imageio.get_writer('test.gif', mode='I') as writer:
             image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
             writer.append_data(image)
 
-    pos_losses.append( training_options['loss_functions']['position'](labels[0], logits[0]).mean().detach().numpy().item() )
-    hd_losses.append(
-        training_options['loss_functions']['head_direction'](labels[0], logits[0]).mean().detach().numpy().item())
-    speed_losses.append(
-        training_options['loss_functions']['speed'](labels[0], logits[0]).mean().detach().numpy().item())
+        pos_losses.append( training_options['loss_functions']['position'](labels[0], logits[0]).mean().detach().numpy().item()*(1.7/582) )
+        hd_losses.append(
+            training_options['loss_functions']['head_direction'](labels[1], logits[1].squeeze()).mean().detach().numpy().item()*(180/np.pi))
+        speed_losses.append(
+            training_options['loss_functions']['speed'](labels[2], logits[2]).mean().detach().numpy().item()*(1.7/582))
 
     # for i in range(len(position)):
     #     for j in range(len(list(position[i]))):
@@ -230,6 +231,34 @@ with imageio.get_writer('test.gif', mode='I') as writer:
 pos_losses = torch.tensor(pos_losses)
 hd_losses = torch.tensor(hd_losses)
 speed_losses = torch.tensor(speed_losses)
+
+
+# W_EST = np.array([ALL_THE[i] for i in range(len(ALL_THE)) if ALL_TH[i] < (-np.pi+(2*np.pi)/18)])
+# fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection='polar'))
+# circular_hist(ax, W_EST, bins=200)
+# extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+# fig.savefig('WEST.png',  bbox_inches=extent.expanded(1.1, 1.2))
+#
+# S_EST = np.array([ALL_THE[i] for i in range(len(ALL_THE)) if ALL_TH[i] < (-np.pi+(2*np.pi)/18 + np.pi/2) and \
+#                   ALL_TH[i] > (-np.pi-(2*np.pi)/18 + np.pi/2)])
+# fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection='polar'))
+# circular_hist(ax, S_EST, bins=200)
+# extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+# fig.savefig('SOUTH.png',  bbox_inches=extent.expanded(1.1, 1.2))
+#
+# N_EST = np.array([ALL_THE[i] for i in range(len(ALL_THE)) if ALL_TH[i] < (-np.pi+(2*np.pi)/18 + 1.5*np.pi) and \
+#                   ALL_TH[i] > (-np.pi-(2*np.pi)/18 + 1.5*np.pi)])
+# fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection='polar'))
+# circular_hist(ax, N_EST, bins=200)
+# extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+# fig.savefig('NORTH.png',  bbox_inches=extent.expanded(1.1, 1.2))
+#
+# E_EST = np.array([ALL_THE[i] for i in range(len(ALL_THE)) if ALL_TH[i] < (-np.pi+(2*np.pi)/18 + np.pi) and \
+#                   ALL_TH[i] > (-np.pi-(2*np.pi)/18 + np.pi)])
+# fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection='polar'))
+# circular_hist(ax, E_EST, bins=200)
+# extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+# fig.savefig('EAST.png',  bbox_inches=extent.expanded(1.1, 1.2))
 
 print(f"Position loss: {pos_losses.mean()}")
 print(f"HD loss: {hd_losses.mean()}")

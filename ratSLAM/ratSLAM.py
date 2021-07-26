@@ -13,7 +13,7 @@ from ratSLAM.view_cells import ViewCells
 from ratSLAM.input import Input
 from ratSLAM.utilities import timethis
 from utils.logger import root_logger
-from utils.misc import getspeed
+from utils.misc import getspeed, rotate
 
 # -----------------------------------------------------------------------
 
@@ -48,6 +48,14 @@ class RatSLAM(object):
         self.ma_trans = 1
         self.prev_rot = []
         self.ma_rot = 1
+
+        self.t_s_h = []
+        self.t_d_h = []
+        self.t_l_h = []
+        self.e_s_h = []
+        self.e_d_h = []
+        self.e_l_h = []
+        self.slam_l_h = []
 
     ###########################################################
     # Public Methods
@@ -96,3 +104,36 @@ class RatSLAM(object):
                                  true_odometry=(input.raw_data[1][3], input.raw_data[1][2]))
 
         self.last_pose = (input.raw_data[1][0],input.raw_data[1][2])
+
+        self.t_s_h.append(input.raw_data[1][3])
+        self.t_d_h.append(input.raw_data[1][2])
+        self.t_l_h.append(input.raw_data[1][0])
+        self.e_s_h.append(vtrans)
+        self.e_d_h.append(vrot)
+        self.e_l_h.append(input.template)
+        self.slam_l_h.append((self.experience_map.current_exp.x_em ,
+                             self.experience_map.current_exp.y_em))
+
+
+    def showError(self):
+        """
+        Prints out error reading for all SLAM components
+        """
+        self.angle_hist = self.experience_map.angle_hist
+
+        abs_ang_errors = [min(abs(self.angle_hist[i][0]-self.angle_hist[i][1]), 2*np.pi - abs(self.angle_hist[i][0]-self.angle_hist[i][1])) for i in range(1, len(self.t_d_h))]
+        MAE_ang = np.mean(abs_ang_errors)
+        abs_spd_errors = [abs(self.t_s_h[i] - self.e_s_h[i]) for i in range(1, len(self.t_s_h))]
+        MAE_spd = np.mean(abs_spd_errors)
+        abs_loc_errors = [ ((self.e_l_h[i][0]-self.t_l_h[i][0])**2 + (self.e_l_h[i][1]-self.t_l_h[i][1])**2)**0.5 for i in range(1, len(self.t_l_h)) ]
+        MAE_loc = np.mean(abs_loc_errors)
+
+        #rotate(self.true_pose[0] - self.initial_pose[0], degrees=self.initial_pose[1])
+        roted = [rotate(self.t_l_h[i] - self.experience_map.initial_pose[0], degrees=self.experience_map.initial_pose[1]) for i in range(len(self.t_l_h))]
+        abs_slam_loc_error = [ ((self.slam_l_h[i][0]-roted[i][0])**2 + (self.slam_l_h[i][1]-roted[i][1])**2)**0.5 for i in range(1, len(self.t_l_h)) ]
+        MAE_slam_loc_error = np.mean(abs_slam_loc_error)
+
+        print(f"MAE Direction:  {MAE_ang}")
+        print(f"MAE Speed:  {MAE_spd}")
+        print(f"MAE Location:  {MAE_loc}")
+        print(f"MAE SLAM Location:  {MAE_slam_loc_error}")

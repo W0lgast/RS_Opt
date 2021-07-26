@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts
+from deep_insight.options import get_opts, MODEL_PATH, H5_PATH
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -27,7 +27,7 @@ else:
 
 
 #PREPROCESSED_HDF5_PATH = './data/processed_R2478.h5'
-PREPROCESSED_HDF5_PATH = 'data/grid_world.h5'
+PREPROCESSED_HDF5_PATH = H5_PATH
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
 loss_functions = {'position': 'euclidean_loss',
@@ -73,13 +73,16 @@ training_options['random_batches'] = False
 train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file)
 model_function = getattr(deep_insight.networks, train_dataset.model_function)
 MODEL = model_function(train_dataset, show_summary=False)
-MODEL.load_state_dict(torch.load('models/trained_grid_world.pt'))
+MODEL.load_state_dict(torch.load(MODEL_PATH))
 MODEL.eval()
 
-def get_odometry(data):
+def get_odometry(data, get_pos=False):
     tansor = torch.from_numpy(data).unsqueeze(0)
     logits = MODEL(tansor)
     position_ests = list(logits[0])[0]
     angle_ests = list(logits[2])[0]
     speed_ests = list(logits[3])[0]
-    return speed_ests[0].item(), angle_ests.item() #* (np.pi /180.)
+    if get_pos:
+        return speed_ests[0].item(), angle_ests.item(), position_ests.detach().numpy() #+pi for felix
+    else:
+        return speed_ests[0].item(), angle_ests.item()
