@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts
+from deep_insight.options import get_opts, MODEL_PATH, H5_PATH
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -30,13 +30,13 @@ else:
 takeout = False
 
 #PREPROCESSED_HDF5_PATH = './data/processed_R2478.h5'
-PREPROCESSED_HDF5_PATH = 'data/Gerrit.h5'
-MODEL_PATH = 'models/Gerrit.pt'
+PREPROCESSED_HDF5_PATH = H5_PATH
+MODEL_PATH = MODEL_PATH
 
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
 loss_functions = {'position': 'euclidean_loss',
-                  'head_direction': 'cyclical_mae_rad',
+                  #'head_direction': 'cyclical_mae_rad',
                   'direction': 'cyclical_mae_rad',
                   'speed': 'mae'}
 # Get loss functions for each output
@@ -45,7 +45,7 @@ for key, item in loss_functions.items():
     loss_functions[key] = function_handle
 
 loss_weights = {'position': 1,
-                'head_direction': 25,
+                #'head_direction': 25,
                 'direction': 25,
                 'speed': 2}
 # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
@@ -132,12 +132,12 @@ with imageio.get_writer('test.gif', mode='I') as writer:
         logits = model(batch)
 
         position_ests = list(logits[0])
-        angle_ests = list(logits[2])
-        speed_ests = list(logits[3])
+        angle_ests = list(logits[1])
+        speed_ests = list(logits[2])
 
         position = list(labels[0])
-        angle = list(labels[2])
-        speeds = list(labels[3])
+        angle = list(labels[1])
+        speeds = list(labels[2])
 
         plot_positions = position
         plot_position_ests = position_ests
@@ -217,7 +217,7 @@ with imageio.get_writer('test.gif', mode='I') as writer:
 
         pos_losses.append( training_options['loss_functions']['position'](labels[0], logits[0]).mean().detach().numpy().item()*(1.7/582) )
         hd_losses.append(
-            training_options['loss_functions']['head_direction'](labels[1], logits[1].squeeze()).mean().detach().numpy().item()*(180/np.pi))
+            training_options['loss_functions']['direction'](labels[1], logits[1].squeeze()).mean().detach().numpy().item()*(180/np.pi))
         speed_losses.append(
             training_options['loss_functions']['speed'](labels[2], logits[2]).mean().detach().numpy().item()*(1.7/582))
 

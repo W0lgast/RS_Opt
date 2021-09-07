@@ -125,6 +125,8 @@ class WaveletDataset(Dataset):
         # 1.) Cut Ephys
         out_sample = []
         for i, out in enumerate(self.outputs):
+
+            var_name = list(self.loss_functions.keys())[i]
             cut_data = out[cut_range, ...]
             pcd = out[prev_cut_range, ...]
 
@@ -134,22 +136,39 @@ class WaveletDataset(Dataset):
             #     cut_data = cut_data[np.arange(0, cut_data.shape[0] + 1, self.average_output)[1::] - 1]
             # out_sample.append(cut_data)
             ## ..todo: replaced above with below: kipp!
-            if i == 0:
-                #cut_data_m = np.mean(cut_data,0)
-                cut_data_m = cut_data[-1, :]
-                out_sample.append(cut_data_m)
+            if var_name == 'position':
 
-                pcdm = pcd[-1,:]
-            elif i == 1 or i == 2:
+                #cut_data_m = cut_data[-1, :]
+                #out_sample.append(cut_data_m)
+                #pcdm = pcd[-1,:]
+                # ..todo: below is average, above is final
+                cut_data_m = np.mean(cut_data, axis=0)
+                out_sample.append(cut_data_m)
+                pcdm = np.mean(pcd, axis=0)
+
+            elif var_name == 'head_direction':
+                #out_sample.append(cut_data[-1][0])
+                # ..todo: this is taking the average head direction for a window - above takes final head direction
+                dirr = np.mean([c[0] for c in cut_data])
+                print(f"head direction = {dirr}")
+                out_sample.append(dirr)
+            elif var_name == 'direction':
                 # ch_y = bookends[1][1] - bookends[0][1]
                 # ch_x = bookends[1][0] - bookends[0][0]
                 # ang_rad = math.atan2(ch_x, ch_y)
                 # out_sample.append(ang_rad*(180/np.pi))
                 # return angle diff between cut data m and last pos
-                out_sample.append(math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0]))
-            elif i == 3:
+                dirt = math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0])
+
+                #dirt = np.mean([c[0] for c in cut_data])
+                out_sample.append(dirt)
+                #print(f"travel direction = {dirt}")
+            elif var_name == 'speed':
                 spd = getspeed(cut_data_m, pcdm)
                 out_sample.append(spd)
+            else:
+                print("ERROR: Unknown var name!")
+                exit(0)
 
         return out_sample
 

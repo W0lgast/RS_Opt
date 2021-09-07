@@ -103,6 +103,8 @@ class Standard_Decoder(nn.Module):
         # ..todo: fix input size of less than 64 time steps
         if self.input_shape[1] < 64:
             H = 1
+        if self.input_shape[1] == 64:
+            H = 3
         if self.input_shape[1] == 512:
             H = 3
         if self.input_shape[1] == 1024:

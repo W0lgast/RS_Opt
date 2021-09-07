@@ -4,9 +4,19 @@ Defines options dict for training.
 
 """
 
-RAT_NAME = "Gerrit"
-MODEL_PATH = f"models/{RAT_NAME}.pt"#
-H5_PATH = f"data/{RAT_NAME}.h5"
+RAT_NAME = "Felix"
+#MODEL_PATH = f"models/{RAT_NAME}_16.pt"
+# MODEL_PATH = "models/Felix_64_head_direction.pt"
+# MAT_PATH = f"data/{RAT_NAME}-2.mat"
+# H5_PATH = f"data/{RAT_NAME}_test.h5"
+
+RAT_NAME = "ZTest"
+MODEL_PATH = f"models/{RAT_NAME}.pt"
+MAT_PATH = f"data/{RAT_NAME}.mat"
+H5_PATH = f"data/{RAT_NAME}_DELETE.h5"
+
+# MAT_PATH = f"data/Jasper.mat"
+# H5_PATH = f"data/ZDeleteMe.h5"
 
 def get_opts(fp_hdf_out, train_test_times):
     """
@@ -21,11 +31,12 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['sampling_rate'] = 512*4 # Sampling rate of the wavelets
     opts['training_indices'] = train_test_times[0].tolist()  # Indices into wavelets used for training the model, adjusted during CV
     opts['testing_indices'] = train_test_times[1].tolist()  # Indices into wavelets used for testing the model, adjusted during CV
-    opts['channels'] = 16
+    #opts['channels'] = 16
+    opts['channels'] = 10
 
     # -------- MODEL PARAMETERS --------------
     opts['model_function'] = 'Standard_Decoder'  # Model architecture used
-    opts['model_timesteps'] = 2**9
+    opts['model_timesteps'] = 64
     # 32 #64  # How many timesteps are used in the input layer, e.g. a sampling rate of 30 will yield 2.13s windows. Has to be divisible X times by 2. X='num_convs_tsr'
     opts['num_convs_tsr'] = 5  # Number of downsampling steps within the model, e.g. with model_timesteps=64, it will downsample 64->32->16->8->4 and output 4 timesteps
     opts['average_output'] = 2**opts['num_convs_tsr']  # Whats the ratio between input and output shape
@@ -46,7 +57,7 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['batch_size'] = 8  # Batch size used for training the model
     opts['steps_per_epoch'] = 250  # Number of steps per training epoch
     opts['validation_steps'] = 15  # Number of steps per validation epoch #..todo: val happens once per epoch now, this var is redundant
-    opts['epochs'] = 1000  # Number of epochs
+    opts['epochs'] = 1000 #1000  # Number of epochs
     opts['shuffle'] = False  # If input should be shuffled
     opts['random_batches'] = True  # If random batches in time are used
     opts['num_cvs'] = 5 # the number of cross validation splits

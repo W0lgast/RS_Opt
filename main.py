@@ -39,7 +39,7 @@ if __name__ == "__main__":
     #                               )
     x = []
     y = []
-    with imageio.get_writer(f'NeuroSLAM-Full-{RAT_NAME}.gif', mode='I') as writer:
+    with imageio.get_writer(f'NeuroSLAM-Full-{RAT_NAME}-newmaze-del.gif', mode='I') as writer:
         for i, d in enumerate(data):
             print(i)
             # if i > 100:
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                 slam.experience_map.plot(writer)
 
     extent = slam.experience_map.position_ax.get_window_extent().transformed(slam.experience_map.fig.dpi_scale_trans.inverted())
-    slam.experience_map.fig.savefig(f'{RAT_NAME}_badscat.png', bbox_inches=extent.expanded(1.1, 1.2))
+    slam.experience_map.fig.savefig(f'{RAT_NAME}_newmaze-del.png', bbox_inches=extent.expanded(1.1, 1.2))
 
     plt.scatter(x,y)
     plt.show()

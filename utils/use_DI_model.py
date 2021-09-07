@@ -31,7 +31,7 @@ PREPROCESSED_HDF5_PATH = H5_PATH
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
 loss_functions = {'position': 'euclidean_loss',
-                  'head_direction': 'cyclical_mae_rad',
+                  #'head_direction': 'cyclical_mae_rad',
                   'direction': 'cyclical_mae_rad',
                   #'direction_delta': 'cyclical_mae_rad',
                   'speed': 'mae'}
@@ -41,7 +41,7 @@ for key, item in loss_functions.items():
     loss_functions[key] = function_handle
 
 loss_weights = {'position': 1,
-                'head_direction': 25,
+                #'head_direction': 25,
                 'direction': 25,
                 #'direction_delta': 25,
                 'speed': 2}
@@ -80,9 +80,9 @@ def get_odometry(data, get_pos=False):
     tansor = torch.from_numpy(data).unsqueeze(0)
     logits = MODEL(tansor)
     position_ests = list(logits[0])[0]
-    angle_ests = list(logits[2])[0]
-    speed_ests = list(logits[3])[0]
+    angle_ests = list(logits[1])[0]
+    speed_ests = list(logits[2])[0]
     if get_pos:
         return speed_ests[0].item(), angle_ests.item(), position_ests.detach().numpy() #+pi for felix
     else:
-        return speed_ests[0].item(), angle_ests.item()
+        return speed_ests[0].item(), angle_ests.item()-np.pi/2

@@ -227,8 +227,8 @@ class ExperienceMap(object):
         # self.position_ax.set_xlim([-100, 700])
         # self.position_ax.set_ylim([-200, 600])
         # # Gerrit
-        self.position_ax.set_xlim([-350, 450])
-        self.position_ax.set_ylim([-600, 200])
+        self.position_ax.set_xlim([-200, 250])
+        self.position_ax.set_ylim([-200, 200])
         self.compass_ax.set_ylim(0, 0.02)
         self.compass_ax.set_yticks(np.arange(0, 0.2, 0.05))
 

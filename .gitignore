@@ -10,3 +10,8 @@ models/old/
 deepinsight/
 log.log
 **.mat
+**.gif
+models/**
+data/**
+utils/zcratch
+**.png
