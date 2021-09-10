@@ -10,14 +10,18 @@ from torchvision import transforms, utils
 import math
 from utils.misc import getspeed
 
-def create_train_and_test_datasets(opts, hdf5_file):
+def create_train_and_test_datasets(opts, hdf5_file, train_half=None):
     """
     Creates training and test datasets from given opts dictionary and hdf5 file.
     """
     # 1.) Create training generator
-    training_generator = WaveletDataset(opts, hdf5_file, training=True)
+    training_generator = WaveletDataset(opts, hdf5_file, training=True, train_half=train_half)
     # 2.) Create testing generator
-    testing_generator = WaveletDataset(opts, hdf5_file, training=False)
+    if train_half is not None:
+        if train_half == "top": train_half_n = "bottom"
+        elif train_half == "bottom": train_half_n = "top"
+        train_half = train_half_n
+    testing_generator = WaveletDataset(opts, hdf5_file, training=False, train_half=train_half)
 
     return training_generator, testing_generator
 
@@ -26,7 +30,7 @@ class WaveletDataset(Dataset):
     Dataset containing raw wavelet sequence; __getitem__ returns an (input, output) pair.
     ..todo: better docs
     """
-    def __init__(self, opts, hdf5_file, training):
+    def __init__(self, opts, hdf5_file, training, train_half=None):
         # 1.) Set all options as attributes
         self.set_opts_as_attribute(opts)
         # 2.) Load data memmaped for mean/std estimation and fast plotting
@@ -36,6 +40,13 @@ class WaveletDataset(Dataset):
         self.last_speed = None
         self.last_ang = None
         self.prev_ind = None
+
+        if (train_half is not None) and (train_half in ["top", "bottom"] == False):
+            print("ERROR: unknown train half keyword")
+            exit(0)
+
+        # train half will mean training will only occur on top half of maze
+        self.train_half = train_half
 
         # Get output(s)
         outputs = []
@@ -55,6 +66,7 @@ class WaveletDataset(Dataset):
 
     def __getitem__(self, idx):
         # 1.) Define start and end index
+        og_idx = idx
         if self.shuffle:
             idx = np.random.choice(self.cv_indices)
         else:
@@ -67,11 +79,16 @@ class WaveletDataset(Dataset):
             cut_range = np.arange(start_index, start_index + self.model_timesteps)
             past_cut_range = np.arange(start_index-1, start_index+self.model_timesteps-1)
 
-        # 3.) Get input sample
-        input_sample = self.get_input_sample(cut_range)
-
-        # 4.) Get output sample
+        # 3.) Get output sample
         output_sample = self.get_output_sample(cut_range, past_cut_range)
+        # if train_half, make sure point is from top half of maze
+        if output_sample[0][1] > 150 and self.train_half == "bottom":
+            return self.__getitem__(og_idx)
+        if output_sample[0][1] <= 150 and self.train_half == "top":
+            return self.__getitem__(og_idx)
+
+        # 4.) Get input sample
+        input_sample = self.get_input_sample(cut_range)
 
         self.prev_ind = idx
         #print(idx)
@@ -136,15 +153,16 @@ class WaveletDataset(Dataset):
             #     cut_data = cut_data[np.arange(0, cut_data.shape[0] + 1, self.average_output)[1::] - 1]
             # out_sample.append(cut_data)
             ## ..todo: replaced above with below: kipp!
-            if var_name == 'position':
 
+            if var_name == 'position':
+                pcdm = np.mean(pcd, axis=0)
+                cut_data_m = np.mean(cut_data, axis=0)
                 #cut_data_m = cut_data[-1, :]
                 #out_sample.append(cut_data_m)
                 #pcdm = pcd[-1,:]
                 # ..todo: below is average, above is final
-                cut_data_m = np.mean(cut_data, axis=0)
+
                 out_sample.append(cut_data_m)
-                pcdm = np.mean(pcd, axis=0)
 
             elif var_name == 'head_direction':
                 #out_sample.append(cut_data[-1][0])

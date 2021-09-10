@@ -70,20 +70,20 @@ if __name__ == '__main__':
         training_options['loss_weights'] = loss_weights
         training_options['loss_names'] = list(loss_functions.keys())
 
-        train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file)
+        train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file, train_half="top")
 
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
             batch_size=training_options['batch_size'],
             shuffle=False,
-            num_workers=8,
+            num_workers=0,
             pin_memory=True)
 
         test_loader = torch.utils.data.DataLoader(
             test_dataset,
             batch_size=training_options['batch_size'],
             shuffle=False,
-            num_workers=8,
+            num_workers=0,
             pin_memory=True)
 
         model_function = getattr(deep_insight.networks, train_dataset.model_function)

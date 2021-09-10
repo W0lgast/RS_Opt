@@ -239,12 +239,20 @@ class ExperienceMap(object):
         self.position_ax.scatter([t[0] for t in self.prev_visited], [t[1] for t in self.prev_visited], c="pink")
         self.position_ax.scatter([true_p_adj[0]], [true_p_adj[1]], c="green")
 
+
         scalebar = ScaleBar(1.7/582, length_fraction=0.25, scale_formatter = lambda value, unit: f"{value*10} {'cm'}")
         self.position_ax.add_artist(scalebar)
 
         pos = {e: (e.x_em, e.y_em) for e in self.G.nodes}
         cols = ["#004650" if e==self.current_exp else "#933A16" for e in self.G.nodes]
+
         nx.draw(self.G, pos=pos, node_color=cols, node_size=50, ax=self.position_ax)
+
+        if self.true_pose[0][1] > 150:
+            self.fig.set_facecolor("#dafcca")
+        else:
+            self.fig.set_facecolor("#f2c2c2")
+        #self.fig.set_facecolor("#dafcca")
 
         cerr = (((true_p_adj[0]-self.current_exp.x_em)**2 + (true_p_adj[1]-self.current_exp.y_em)**2)**0.5)*(1.7/582)
         self.loc_err.append( cerr )

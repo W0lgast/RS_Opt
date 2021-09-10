@@ -39,7 +39,7 @@ if __name__ == "__main__":
     #                               )
     x = []
     y = []
-    with imageio.get_writer(f'NeuroSLAM-Full-{RAT_NAME}-newmaze-del.gif', mode='I') as writer:
+    with imageio.get_writer(f'NeuroSLAM-Full-{RAT_NAME}-letsgo1.gif', mode='I') as writer:
         for i, d in enumerate(data):
             print(i)
             # if i > 100:

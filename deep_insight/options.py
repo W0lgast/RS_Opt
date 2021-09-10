@@ -10,10 +10,12 @@ RAT_NAME = "Felix"
 # MAT_PATH = f"data/{RAT_NAME}-2.mat"
 # H5_PATH = f"data/{RAT_NAME}_test.h5"
 
+#RAT_NAME = "Test-New-Speed-Dir"
 RAT_NAME = "ZTest"
-MODEL_PATH = f"models/{RAT_NAME}.pt"
+MODEL_PATH = f"models/{RAT_NAME}_Top_Only.pt"
+#MODEL_PATH = f"models/ZTest.pt"
 MAT_PATH = f"data/{RAT_NAME}.mat"
-H5_PATH = f"data/{RAT_NAME}_DELETE.h5"
+H5_PATH = f"data/{RAT_NAME}.h5"
 
 # MAT_PATH = f"data/Jasper.mat"
 # H5_PATH = f"data/ZDeleteMe.h5"
@@ -57,7 +59,7 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['batch_size'] = 8  # Batch size used for training the model
     opts['steps_per_epoch'] = 250  # Number of steps per training epoch
     opts['validation_steps'] = 15  # Number of steps per validation epoch #..todo: val happens once per epoch now, this var is redundant
-    opts['epochs'] = 1000 #1000  # Number of epochs
+    opts['epochs'] = 250 #1000  # Number of epochs
     opts['shuffle'] = False  # If input should be shuffled
     opts['random_batches'] = True  # If random batches in time are used
     opts['num_cvs'] = 5 # the number of cross validation splits
