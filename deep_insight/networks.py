@@ -31,6 +31,9 @@ class Standard_Decoder(nn.Module):
         # first layer is a gaussian noise augmentation to prevent overfitting
         self.gaussian_noise = GaussianNoise()
 
+        #dropout layer
+        self.dropout = nn.Dropout(p=0.05)
+
         # loop over defined number of downsampling layers
         input_channels = self.input_shape[3]
         for nct in range(0, tg.num_convs_tsr):
@@ -104,7 +107,8 @@ class Standard_Decoder(nn.Module):
         if self.input_shape[1] < 64:
             H = 1
         if self.input_shape[1] == 64:
-            H = 3
+            #H = 3 # used to be this, probably will be again ..todo::kipp
+            H = 2
         if self.input_shape[1] == 512:
             H = 3
         if self.input_shape[1] == 1024:
@@ -141,12 +145,19 @@ class Standard_Decoder(nn.Module):
         x = self.gaussian_noise(x)
         for step_name in self.conv_order:
             x = getattr(self, step_name)(x)
+
+            x = self.dropout(x)
+
         flat_x = self.flatten(x)
         outputs = []
         for fc_order in self.fc_orders:
             x = getattr(self, fc_order[0])(flat_x)
             for step_name in fc_order[1::]:
+
+                x = self.dropout(x)
+
                 x = getattr(self, step_name)(x)
+
             outputs.append(torch.squeeze(x,1))
         return outputs
 

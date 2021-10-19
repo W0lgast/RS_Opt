@@ -76,9 +76,16 @@ class Trainer(object):
                 losses = torch.tensor([]).to(self.device)
                 for ind, logit in enumerate(logits):
 
+                    loss_key = list(self.criterion[0].keys())[ind]
+
+                    # if loss_key == 'position':
+                    #     print("DEBUG: skipping position loss") #..todo kipp!
+                    #     continue
+                    # if loss_key == 'position':
+                    #     print("OH NOOOOOO KIPPPPP") #..todo kipp
+
                     loss_func = list(self.criterion[0].values())[ind]
                     loss_weight= list(self.criterion[1].values())[ind]
-                    loss_key = list(self.criterion[0].keys())[ind]
                     if logit.shape[1] == 1:
                         labels[ind] = torch.unsqueeze(labels[ind], 1)
                         #logit = torch.squeeze(logit)

@@ -82,9 +82,10 @@ class WaveletDataset(Dataset):
         # 3.) Get output sample
         output_sample = self.get_output_sample(cut_range, past_cut_range)
         # if train_half, make sure point is from top half of maze
-        if output_sample[0][1] > 150 and self.train_half == "bottom":
+        if output_sample[0][1] > 0.1 and self.train_half == "bottom": #was 150 ..todo kipp
+            #print(output_sample[0])
             return self.__getitem__(og_idx)
-        if output_sample[0][1] <= 150 and self.train_half == "top":
+        if output_sample[0][1] <= 0.1 and self.train_half == "top": #was 150 ..todo kipp
             return self.__getitem__(og_idx)
 
         # 4.) Get input sample
@@ -93,11 +94,18 @@ class WaveletDataset(Dataset):
         self.prev_ind = idx
         #print(idx)
 
-        return (input_sample, output_sample)
+        return (input_sample, self.modify_out_sample(output_sample))
 
     # -------------------------------------------------------------------------
     # Public Function
     # -------------------------------------------------------------------------
+
+    def modify_out_sample(self, output_sample):
+        """
+        Used to change output sample just before it is returned.
+        Usually just return output sample (unless for debug purposes).
+        """
+        return output_sample
 
     def prepare_data_generator(self, training):
         # Define sample size and means
@@ -175,14 +183,18 @@ class WaveletDataset(Dataset):
                 # ch_x = bookends[1][0] - bookends[0][0]
                 # ang_rad = math.atan2(ch_x, ch_y)
                 # out_sample.append(ang_rad*(180/np.pi))
-                # return angle diff between cut data m and last pos
-                dirt = math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0])
 
-                #dirt = np.mean([c[0] for c in cut_data])
+                # return angle diff between cut data m and last pos
+                #dirt = math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0])
+
+                dirt = np.mean([c[0] for c in cut_data])
+                #dirt = cut_data[-1][0]
                 out_sample.append(dirt)
                 #print(f"travel direction = {dirt}")
             elif var_name == 'speed':
-                spd = getspeed(cut_data_m, pcdm)
+                #spd = getspeed(cut_data_m, pcdm)
+                spd = np.mean([c[0] for c in cut_data])
+                #spd = cut_data[-1][0]
                 out_sample.append(spd)
             else:
                 print("ERROR: Unknown var name!")

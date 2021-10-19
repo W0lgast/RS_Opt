@@ -4,14 +4,18 @@ Defines options dict for training.
 
 """
 
-RAT_NAME = "Felix"
+#RAT_NAME = "Felix"
 #MODEL_PATH = f"models/{RAT_NAME}_16.pt"
 # MODEL_PATH = "models/Felix_64_head_direction.pt"
 # MAT_PATH = f"data/{RAT_NAME}-2.mat"
 # H5_PATH = f"data/{RAT_NAME}_test.h5"
 
 #RAT_NAME = "Test-New-Speed-Dir"
-RAT_NAME = "ZTest"
+
+RAT_NAME = "POSTSKIP"
+#RAT_NAME = "ZTest"
+
+#RAT_NAME = "Only-EC-Filtered-Over-400"
 MODEL_PATH = f"models/{RAT_NAME}_Top_Only.pt"
 #MODEL_PATH = f"models/ZTest.pt"
 MAT_PATH = f"data/{RAT_NAME}.mat"
@@ -34,7 +38,7 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['training_indices'] = train_test_times[0].tolist()  # Indices into wavelets used for training the model, adjusted during CV
     opts['testing_indices'] = train_test_times[1].tolist()  # Indices into wavelets used for testing the model, adjusted during CV
     #opts['channels'] = 16
-    opts['channels'] = 10
+    opts['channels'] = None
 
     # -------- MODEL PARAMETERS --------------
     opts['model_function'] = 'Standard_Decoder'  # Model architecture used
@@ -59,7 +63,7 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['batch_size'] = 8  # Batch size used for training the model
     opts['steps_per_epoch'] = 250  # Number of steps per training epoch
     opts['validation_steps'] = 15  # Number of steps per validation epoch #..todo: val happens once per epoch now, this var is redundant
-    opts['epochs'] = 250 #1000  # Number of epochs
+    opts['epochs'] = 100  # Number of epochs
     opts['shuffle'] = False  # If input should be shuffled
     opts['random_batches'] = True  # If random batches in time are used
     opts['num_cvs'] = 5 # the number of cross validation splits

@@ -16,6 +16,8 @@ import h5py
 import numpy as np
 import torch
 import wandb
+import sys
+sys.setrecursionlimit(10000)
 
 # -----------------------------------------------------------------------
 
@@ -47,11 +49,11 @@ if __name__ == '__main__':
         function_handle = getattr(deep_insight.loss, item)
         loss_functions[key] = function_handle
 
-    loss_weights = {'position': 1,
+    loss_weights = {'position': 100,
                     #'head_direction': 20,  #was 10, tweaked for MJ
-                    'direction': 200,  # was 10, tweaked for MJ
+                    'direction': 20,  # was 10, tweaked for MJ
                     #'direction_delta': 10,  # was 10, tweaked for MJ
-                    'speed': 250} #was 2 but tweaked for MJ dataset
+                    'speed': 2500} #was 2 but tweaked for MJ dataset
 
     # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
     training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(np.array([]), np.array([])))
@@ -71,6 +73,7 @@ if __name__ == '__main__':
         training_options['loss_names'] = list(loss_functions.keys())
 
         train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file, train_half="top")
+        #train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file)
 
         train_loader = torch.utils.data.DataLoader(
             train_dataset,
