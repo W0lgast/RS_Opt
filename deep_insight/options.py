@@ -14,10 +14,13 @@ Defines options dict for training.
 
 RAT_NAME = "POSTSKIP"
 #RAT_NAME = "ZTest"
+RAT_NAME = "Felix"
 
-#RAT_NAME = "Only-EC-Filtered-Over-400"
-MODEL_PATH = f"models/{RAT_NAME}_Top_Only.pt"
+#RAT_NAME = "Only-EC"
+#MODEL_PATH = f"models/{RAT_NAME}_AllMap.pt"
 #MODEL_PATH = f"models/ZTest.pt"
+MODEL_PATH = f"models/{RAT_NAME}.pt"
+
 MAT_PATH = f"data/{RAT_NAME}.mat"
 H5_PATH = f"data/{RAT_NAME}.h5"
 
@@ -63,10 +66,10 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['batch_size'] = 8  # Batch size used for training the model
     opts['steps_per_epoch'] = 250  # Number of steps per training epoch
     opts['validation_steps'] = 15  # Number of steps per validation epoch #..todo: val happens once per epoch now, this var is redundant
-    opts['epochs'] = 100  # Number of epochs
+    opts['epochs'] = 250  # Number of epochs
     opts['shuffle'] = False  # If input should be shuffled
     opts['random_batches'] = True  # If random batches in time are used
-    opts['num_cvs'] = 5 # the number of cross validation splits
+    opts['num_cvs'] = 3 # the number of cross validation splits
 
     # -------- MISC--------------- ------------
     opts['tensorboard_logfolder'] = './'  # Logfolder for tensorboard

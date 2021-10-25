@@ -93,20 +93,20 @@ class RatSLAM(object):
         vtrans = np.mean(self.prev_trans)
         vrot = np.mean(self.prev_rot)
 
-        #print(f"Translation is {vtrans}, Rotation is {vrot}")
-        #if self.last_pose is not None:
-            #print(f"Actual Trans is {getspeed(self.last_pose[0], input.raw_data[1][0])}")
+        print(f"Translation is {vtrans}, Rotation is {vrot}")
+        if self.last_pose is not None:
+            print(f"Actual Trans is {getspeed(self.last_pose[0], input.raw_data[1][0])}")
         # Update pose cell network, get index of most activated pose cell
         x_pc, y_pc, th_pc = self.pose_cells.step(view_cell, vtrans, vrot)
         # Execute iteration of experience map
         self.experience_map.step(view_cell, vtrans, vrot, x_pc, y_pc, th_pc,
                                  true_pose=(input.raw_data[1][0],input.raw_data[1][2]),
-                                 true_odometry=(input.raw_data[1][3], input.raw_data[1][2]))
+                                 true_odometry=(input.raw_data[1][2], input.raw_data[1][1]))
 
         self.last_pose = (input.raw_data[1][0],input.raw_data[1][2])
 
-        self.t_s_h.append(input.raw_data[1][3])
-        self.t_d_h.append(input.raw_data[1][2])
+        self.t_s_h.append(input.raw_data[1][2])
+        self.t_d_h.append(input.raw_data[1][1])
         self.t_l_h.append(input.raw_data[1][0])
         self.e_s_h.append(vtrans)
         self.e_d_h.append(vrot)

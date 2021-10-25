@@ -1,23 +1,25 @@
 """
-
-Contains decoder architectures
-
+Contains NN decoder architectures, and modules used within this decoder
 """
 
-# --------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 import torch
 import torch.backends.cudnn
-import numpy as np
 import math
 from torch import nn
-from torch.nn import functional as F
-import pickle
 
-# --------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 class Standard_Decoder(nn.Module):
-    def __init__(self, tg, show_summary=True):
+    """
+    Designed to decode position, head direction, and speed from LFP
+    morelet wavelet decompostion images.
+    """
+    def __init__(self, tg):
+        """
+        :param tg: Options dictionary
+        """
         super(Standard_Decoder, self).__init__()
         self.input_shape = tg.input_shape
 
@@ -26,17 +28,18 @@ class Standard_Decoder(nn.Module):
             exit(0)
 
         self.target_names = list(tg.loss_functions.keys())
+        # conv order will be filled with convolutional layers, in order
         self.conv_order = []
-
         # first layer is a gaussian noise augmentation to prevent overfitting
         self.gaussian_noise = GaussianNoise()
-
-        #dropout layer
-        self.dropout = nn.Dropout(p=0.05)
-
+        # dropout layer, called between each convolutional layer
+        self.dropout = nn.Dropout(p=0.0)
         # loop over defined number of downsampling layers
         input_channels = self.input_shape[3]
+        # loop of number of specified convolutional layers
         for nct in range(0, tg.num_convs_tsr):
+            # Instantiate convolutional layers and their activation function,
+            # add them to conv_order.
             setattr(self,
                     f"conv_tsr_{nct}",
                     TimeDistributed(
@@ -47,7 +50,6 @@ class Standard_Decoder(nn.Module):
                                   padding=(1,1))
                         )
                     )
-
             setattr(self,
                     f"conv_tsr_{nct}_activation",
                     getattr(nn, tg.act_conv)()
@@ -72,7 +74,7 @@ class Standard_Decoder(nn.Module):
                                 f"conv_fr_{nct}",
                                 f"conv_fr_{nct}_activation",
                                 ]
-
+        # Permute input to convolve over different dims
         self.permute = Lambda(lambda x: x.permute((0, 4, 2, 3, 1)))
         self.conv_order.append("permute")
 
@@ -142,7 +144,7 @@ class Standard_Decoder(nn.Module):
 
     def forward(self, x: torch.Tensor):
         x = x.permute(0, 1, 4, 2, 3)
-        x = self.gaussian_noise(x)
+        x = self.gaussian_noise(x) #..todo: kipp testing removing this
         for step_name in self.conv_order:
             x = getattr(self, step_name)(x)
 
@@ -167,6 +169,7 @@ class Standard_Decoder(nn.Module):
             nn.init.zeros_(layer.bias)
         if hasattr(layer, "weight"):
             nn.init.kaiming_normal_(layer.weight)
+
 # ---------------------------------------------------------------------
 
 class GaussianNoise(nn.Module):

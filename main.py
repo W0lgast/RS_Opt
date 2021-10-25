@@ -41,13 +41,18 @@ if __name__ == "__main__":
     y = []
     with imageio.get_writer(f'NeuroSLAM-Full-{RAT_NAME}-letsgo1.gif', mode='I') as writer:
         for i, d in enumerate(data):
-            print(i)
+            # print(i)
+            # x.append(d.raw_data[1][0][0])
+            # y.append(d.raw_data[1][0][1])
             # if i > 100:
             #     break
             slam.step(d)
             if i%1 == 0 and i>0:
                 slam.experience_map.plot(writer)
 
+    plt.clf()
+    plt.scatter(x,y)
+    plt.show()
     extent = slam.experience_map.position_ax.get_window_extent().transformed(slam.experience_map.fig.dpi_scale_trans.inverted())
     slam.experience_map.fig.savefig(f'{RAT_NAME}_newmaze-del.png', bbox_inches=extent.expanded(1.1, 1.2))
 

@@ -229,6 +229,8 @@ class ExperienceMap(object):
         # # Gerrit
         self.position_ax.set_xlim([-200, 250])
         self.position_ax.set_ylim([-200, 200])
+        self.position_ax.set_xlim([-2, 2])
+        self.position_ax.set_ylim([-2, 2])
         self.compass_ax.set_ylim(0, 0.02)
         self.compass_ax.set_yticks(np.arange(0, 0.2, 0.05))
 
@@ -236,9 +238,8 @@ class ExperienceMap(object):
         true_p_adj = rotate(self.true_pose[0] - self.initial_pose[0], degrees=self.initial_pose[1])
         self.prev_visited.append((true_p_adj[0], true_p_adj[1]))
 
-        self.position_ax.scatter([t[0] for t in self.prev_visited], [t[1] for t in self.prev_visited], c="pink")
-        self.position_ax.scatter([true_p_adj[0]], [true_p_adj[1]], c="green")
-
+        self.position_ax.scatter([t[0] for t in self.prev_visited], [t[1] for t in self.prev_visited], c="blue", s=10)
+        self.position_ax.scatter([true_p_adj[0]], [true_p_adj[1]], c="green", s=10)
 
         scalebar = ScaleBar(1.7/582, length_fraction=0.25, scale_formatter = lambda value, unit: f"{value*10} {'cm'}")
         self.position_ax.add_artist(scalebar)
@@ -247,6 +248,9 @@ class ExperienceMap(object):
         cols = ["#004650" if e==self.current_exp else "#933A16" for e in self.G.nodes]
 
         nx.draw(self.G, pos=pos, node_color=cols, node_size=50, ax=self.position_ax)
+
+        self.position_ax.scatter([t[0] for t in self.prev_visited], [t[1] for t in self.prev_visited], c="blue", s=10)
+        self.position_ax.scatter([true_p_adj[0]], [true_p_adj[1]], c="green", s=10)
 
         if self.true_pose[0][1] > 150:
             self.fig.set_facecolor("#dafcca")

@@ -32,7 +32,7 @@ PREPROCESSED_HDF5_PATH = H5_PATH
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
 loss_functions = {'position': 'euclidean_loss',
-                  'head_direction': 'cyclical_mae_rad',
+                  #'head_direction': 'cyclical_mae_rad',
                   'direction': 'cyclical_mae_rad',
                   'speed': 'mae'}
 # Get loss functions for each output
@@ -41,7 +41,7 @@ for key, item in loss_functions.items():
     loss_functions[key] = function_handle
 
 loss_weights = {'position': 1,
-                'head_direction': 25,
+                #'head_direction': 25,
                 'direction': 25,
                 'speed': 2}
 # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter

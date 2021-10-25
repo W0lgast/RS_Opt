@@ -72,7 +72,7 @@ training_options['random_batches'] = False
 
 train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file)
 model_function = getattr(deep_insight.networks, train_dataset.model_function)
-MODEL = model_function(train_dataset, show_summary=False)
+MODEL = model_function(train_dataset)
 MODEL.load_state_dict(torch.load(MODEL_PATH))
 MODEL.eval()
 

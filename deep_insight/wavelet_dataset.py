@@ -20,7 +20,12 @@ def create_train_and_test_datasets(opts, hdf5_file, train_half=None):
     if train_half is not None:
         if train_half == "top": train_half_n = "bottom"
         elif train_half == "bottom": train_half_n = "top"
+
+        if train_half == "inside": train_half_n = "outside"
+        elif train_half == "outside": train_half_n = "inside"
+
         train_half = train_half_n
+
     testing_generator = WaveletDataset(opts, hdf5_file, training=False, train_half=train_half)
 
     return training_generator, testing_generator
@@ -82,10 +87,7 @@ class WaveletDataset(Dataset):
         # 3.) Get output sample
         output_sample = self.get_output_sample(cut_range, past_cut_range)
         # if train_half, make sure point is from top half of maze
-        if output_sample[0][1] > 0.1 and self.train_half == "bottom": #was 150 ..todo kipp
-            #print(output_sample[0])
-            return self.__getitem__(og_idx)
-        if output_sample[0][1] <= 0.1 and self.train_half == "top": #was 150 ..todo kipp
+        if not self._accept_output(output_sample, self.train_half):
             return self.__getitem__(og_idx)
 
         # 4.) Get input sample
@@ -164,8 +166,8 @@ class WaveletDataset(Dataset):
 
             if var_name == 'position':
                 pcdm = np.mean(pcd, axis=0)
-                cut_data_m = np.mean(cut_data, axis=0)
-                #cut_data_m = cut_data[-1, :]
+                #cut_data_m = np.mean(cut_data, axis=0)
+                cut_data_m = cut_data[-1, :]
                 #out_sample.append(cut_data_m)
                 #pcdm = pcd[-1,:]
                 # ..todo: below is average, above is final
@@ -185,15 +187,15 @@ class WaveletDataset(Dataset):
                 # out_sample.append(ang_rad*(180/np.pi))
 
                 # return angle diff between cut data m and last pos
-                #dirt = math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0])
+                dirt = math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0])
 
-                dirt = np.mean([c[0] for c in cut_data])
+                #dirt = np.mean([c[0] for c in cut_data])
                 #dirt = cut_data[-1][0]
                 out_sample.append(dirt)
                 #print(f"travel direction = {dirt}")
             elif var_name == 'speed':
-                #spd = getspeed(cut_data_m, pcdm)
-                spd = np.mean([c[0] for c in cut_data])
+                spd = getspeed(cut_data_m, pcdm)
+                #spd = np.mean([c[0] for c in cut_data])
                 #spd = cut_data[-1][0]
                 out_sample.append(spd)
             else:
@@ -201,6 +203,21 @@ class WaveletDataset(Dataset):
                 exit(0)
 
         return out_sample
+
+    def _accept_output(self, output_sample, rule_keyword):
+        if rule_keyword == "top":
+            return output_sample[0][1] > 0.1
+        elif rule_keyword == "bottom":
+            return output_sample[0][1] <= 0.1
+        elif rule_keyword == "inside":
+            return np.linalg.norm(output_sample[0]-np.array([0.0264, 0.2185])) < 0.15
+        elif rule_keyword == "outside":
+            return np.linalg.norm(output_sample[0]-np.array([0.0264, 0.2185])) >= 0.15
+        elif rule_keyword is None:
+            return True
+        else:
+            print("Unknown accept output rule!")
+            exit(0)
 
 class WaveletDatasetFrey(Dataset):
     """

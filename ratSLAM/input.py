@@ -178,10 +178,9 @@ class MattJonesInput(Input):
         Compares this inputs template to another - returns similarity score.
         """
         dist = ((self.template[0] - other_data.template[0])**2 + (self.template[1] - other_data.template[1])**2)**0.5
-        #return dist
+        return dist
         # below will always fail
-        #
-        return 100.
+        #return 100.
 
 
     def compareOdometry(self, other_template):
