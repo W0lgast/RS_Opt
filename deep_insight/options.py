@@ -4,29 +4,30 @@ Defines options dict for training.
 
 """
 
-import deep_insight.loss
+import deep_insight.loss as loss
 
 RAT_NAME = "POSTSKIP"
-RAT_NAME = "Felix"
+#RAT_NAME = "Felix"
 
 MODEL_PATH = f"models/{RAT_NAME}.pt"
 MAT_PATH = f"data/{RAT_NAME}.mat"
 H5_PATH = f"data/{RAT_NAME}.h5"
 
-TARGETS = ["position", "head_direction", "direction", "speed"]
+#TARGETS = ["position", "head_direction", "direction", "speed"] #Felix, Gerrit, Etc...
+TARGETS = ["position", "direction", "speed"]
 
 loss_functions = {'position': 'euclidean_loss',
                   'head_direction': 'cyclical_mae_rad',
                   'direction': 'cyclical_mae_rad',
                   'direction_delta': 'cyclical_mae_rad',
                   'speed': 'mae'}
-LOSS_FUNCTIONS = {t: loss_functions[t] for t in TARGETS}
+LOSS_FUNCTIONS = {t: getattr(loss, loss_functions[t]) for t in TARGETS}
 
-loss_weights = {'position': 1,
+loss_weights = {'position': 10,
                 'head_direction': 25,
-                'direction': 25,
+                'direction': 2.5,
                 'direction_delta': 25,
-                'speed': 2}
+                'speed': 400}
 LOSS_WEIGHTS = {t: loss_weights[t] for t in TARGETS}
 
 
@@ -41,7 +42,7 @@ def get_opts(fp_hdf_out, train_test_times):
 
     # -------- DATA ------------------------
     opts['fp_hdf_out'] = fp_hdf_out  # Filepath for hdf5 file storing wavelets and outputs
-    opts['sampling_rate'] = 512*4 # Sampling rate of the wavelets
+    opts['sampling_rate'] = 1250 # 512*4 # Sampling rate of the wavelets
     opts['training_indices'] = train_test_times[0].tolist()  # Indices into wavelets used for training the model, adjusted during CV
     opts['testing_indices'] = train_test_times[1].tolist()  # Indices into wavelets used for testing the model, adjusted during CV
     #opts['channels'] = 16

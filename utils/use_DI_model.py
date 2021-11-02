@@ -26,7 +26,6 @@ else:
     DEVICE = torch.device("cpu")
 
 
-#PREPROCESSED_HDF5_PATH = './data/processed_R2478.h5'
 PREPROCESSED_HDF5_PATH = H5_PATH
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])

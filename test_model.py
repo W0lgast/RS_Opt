@@ -81,7 +81,7 @@ test_loader = torch.utils.data.DataLoader(
     pin_memory=True)
 
 model_function = getattr(deep_insight.networks, train_dataset.model_function)
-model = model_function(train_dataset, show_summary=False)
+model = model_function(train_dataset)
 model.load_state_dict(torch.load(MODEL_PATH))
 model.eval()
 
