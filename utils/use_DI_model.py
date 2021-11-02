@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, MODEL_PATH, H5_PATH, LOSS_WEIGHTS, LOSS_FUNCTIONS
+from deep_insight.options import get_opts, MODEL_PATH, H5_PATH, LOSS_WEIGHTS, LOSS_FUNCTIONS, TARGETS
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -68,9 +68,9 @@ MODEL.eval()
 def get_odometry(data, get_pos=False):
     tansor = torch.from_numpy(data).unsqueeze(0)
     logits = MODEL(tansor)
-    position_ests = list(logits[0])[0]
-    angle_ests = list(logits[2])[0]
-    speed_ests = list(logits[3])[0]
+    position_ests = list(logits[TARGETS.index("position")])[0]
+    angle_ests = list(logits[TARGETS.index("direction")])[0]
+    speed_ests = list(logits[TARGETS.index("speed")])[0]
     if get_pos:
         return speed_ests[0].item(), angle_ests.item(), position_ests.detach().numpy() #+pi for felix
     else:
