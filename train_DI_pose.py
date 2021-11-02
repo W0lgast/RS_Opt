@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, RAT_NAME, MODEL_PATH, H5_PATH
+from deep_insight.options import get_opts, RAT_NAME, MODEL_PATH, H5_PATH, LOSS_FUNCTIONS, LOSS_WEIGHTS
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -39,21 +39,8 @@ if __name__ == '__main__':
     wavelets = np.array(hdf5_file['inputs/wavelets'])
     frequencies = np.array(hdf5_file['inputs/fourier_frequencies'])
 
-    loss_functions = {'position': 'euclidean_loss',
-                      #'head_direction': 'cyclical_mae_rad',
-                      'direction': 'cyclical_mae_rad',
-                      #'direction_delta': 'cyclical_mae_rad',
-                      'speed': 'mae'}
-    # Get loss functions for each output
-    for key, item in loss_functions.items():
-        function_handle = getattr(deep_insight.loss, item)
-        loss_functions[key] = function_handle
-
-    loss_weights = {'position': 100,
-                    #'head_direction': 20,  #was 10, tweaked for MJ
-                    'direction': 20,  # was 10, tweaked for MJ
-                    #'direction_delta': 10,  # was 10, tweaked for MJ
-                    'speed': 2500} #was 2 but tweaked for MJ dataset
+    loss_functions = LOSS_FUNCTIONS
+    loss_weights = LOSS_WEIGHTS
 
     # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
     training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(np.array([]), np.array([])))

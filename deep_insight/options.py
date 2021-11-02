@@ -4,28 +4,32 @@ Defines options dict for training.
 
 """
 
-#RAT_NAME = "Felix"
-#MODEL_PATH = f"models/{RAT_NAME}_16.pt"
-# MODEL_PATH = "models/Felix_64_head_direction.pt"
-# MAT_PATH = f"data/{RAT_NAME}-2.mat"
-# H5_PATH = f"data/{RAT_NAME}_test.h5"
-
-#RAT_NAME = "Test-New-Speed-Dir"
+import deep_insight.loss
 
 RAT_NAME = "POSTSKIP"
-#RAT_NAME = "ZTest"
 RAT_NAME = "Felix"
 
-#RAT_NAME = "Only-EC"
-#MODEL_PATH = f"models/{RAT_NAME}_AllMap.pt"
-#MODEL_PATH = f"models/ZTest.pt"
 MODEL_PATH = f"models/{RAT_NAME}.pt"
-
 MAT_PATH = f"data/{RAT_NAME}.mat"
 H5_PATH = f"data/{RAT_NAME}.h5"
 
-# MAT_PATH = f"data/Jasper.mat"
-# H5_PATH = f"data/ZDeleteMe.h5"
+TARGETS = ["position", "head_direction", "direction", "speed"]
+
+loss_functions = {'position': 'euclidean_loss',
+                  'head_direction': 'cyclical_mae_rad',
+                  'direction': 'cyclical_mae_rad',
+                  'direction_delta': 'cyclical_mae_rad',
+                  'speed': 'mae'}
+LOSS_FUNCTIONS = {t: loss_functions[t] for t in TARGETS}
+
+loss_weights = {'position': 1,
+                'head_direction': 25,
+                'direction': 25,
+                'direction_delta': 25,
+                'speed': 2}
+LOSS_WEIGHTS = {t: loss_weights[t] for t in TARGETS}
+
+
 
 def get_opts(fp_hdf_out, train_test_times):
     """

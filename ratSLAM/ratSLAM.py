@@ -14,6 +14,7 @@ from ratSLAM.input import Input
 from ratSLAM.utilities import timethis
 from utils.logger import root_logger
 from utils.misc import getspeed, rotate
+from deep_insight.options import TARGETS
 
 # -----------------------------------------------------------------------
 
@@ -100,14 +101,17 @@ class RatSLAM(object):
         x_pc, y_pc, th_pc = self.pose_cells.step(view_cell, vtrans, vrot)
         # Execute iteration of experience map
         self.experience_map.step(view_cell, vtrans, vrot, x_pc, y_pc, th_pc,
-                                 true_pose=(input.raw_data[1][0],input.raw_data[1][2]),
-                                 true_odometry=(input.raw_data[1][2], input.raw_data[1][1]))
+                                 true_pose=(input.raw_data[1][TARGETS.index("position")],
+                                            input.raw_data[1][TARGETS.index("direction")]),
+                                 true_odometry=(input.raw_data[1][TARGETS.index("speed")],
+                                                input.raw_data[1][TARGETS.index("direction")]))
 
-        self.last_pose = (input.raw_data[1][0],input.raw_data[1][2])
+        self.last_pose = (input.raw_data[1][TARGETS.index("position")],
+                          input.raw_data[1][TARGETS.index("direction")])
 
-        self.t_s_h.append(input.raw_data[1][2])
-        self.t_d_h.append(input.raw_data[1][1])
-        self.t_l_h.append(input.raw_data[1][0])
+        self.t_s_h.append(input.raw_data[1][TARGETS.index("speed")])
+        self.t_d_h.append(input.raw_data[1][TARGETS.index("direction")])
+        self.t_l_h.append(input.raw_data[1][TARGETS.index("position")])
         self.e_s_h.append(vtrans)
         self.e_d_h.append(vrot)
         self.e_l_h.append(input.template)
@@ -121,7 +125,8 @@ class RatSLAM(object):
         """
         self.angle_hist = self.experience_map.angle_hist
 
-        abs_ang_errors = [min(abs(self.angle_hist[i][0]-self.angle_hist[i][1]), 2*np.pi - abs(self.angle_hist[i][0]-self.angle_hist[i][1])) for i in range(1, len(self.t_d_h))]
+        abs_ang_errors = [min(abs(self.angle_hist[i][0]-self.angle_hist[i][1]),
+                              2*np.pi - abs(self.angle_hist[i][0]-self.angle_hist[i][1])) for i in range(1, len(self.t_d_h))]
         MAE_ang = np.mean(abs_ang_errors)
         abs_spd_errors = [abs(self.t_s_h[i] - self.e_s_h[i]) for i in range(1, len(self.t_s_h))]
         MAE_spd = np.mean(abs_spd_errors)

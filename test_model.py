@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, MODEL_PATH, H5_PATH
+from deep_insight.options import get_opts, MODEL_PATH, H5_PATH, LOSS_WEIGHTS, LOSS_FUNCTIONS
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -35,19 +35,10 @@ MODEL_PATH = MODEL_PATH
 
 hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
-loss_functions = {'position': 'euclidean_loss',
-                  #'head_direction': 'cyclical_mae_rad',
-                  'direction': 'cyclical_mae_rad',
-                  'speed': 'mae'}
-# Get loss functions for each output
-for key, item in loss_functions.items():
-    function_handle = getattr(deep_insight.loss, item)
-    loss_functions[key] = function_handle
+loss_functions = LOSS_FUNCTIONS
 
-loss_weights = {'position': 1,
-                #'head_direction': 25,
-                'direction': 25,
-                'speed': 2}
+loss_weights = LOSS_WEIGHTS
+
 # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
 training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(np.array([]), np.array([])))
 training_options['loss_functions'] = loss_functions.copy()

@@ -165,19 +165,16 @@ class WaveletDataset(Dataset):
             ## ..todo: replaced above with below: kipp!
 
             if var_name == 'position':
-                pcdm = np.mean(pcd, axis=0)
-                #cut_data_m = np.mean(cut_data, axis=0)
+                pcdm = pcd[-1, :]
                 cut_data_m = cut_data[-1, :]
-                #out_sample.append(cut_data_m)
-                #pcdm = pcd[-1,:]
-                # ..todo: below is average, above is final
 
                 out_sample.append(cut_data_m)
 
             elif var_name == 'head_direction':
-                #out_sample.append(cut_data[-1][0])
                 # ..todo: this is taking the average head direction for a window - above takes final head direction
-                dirr = np.mean([c[0] for c in cut_data])
+                #dirr = np.mean([c[0] for c in cut_data])
+                #print(f"head direction = {dirr}")
+                dirr = math.atan2(cut_data_m[1] - pcdm[1], cut_data_m[0] - pcdm[0]) #..todo check
                 print(f"head direction = {dirr}")
                 out_sample.append(dirr)
             elif var_name == 'direction':
