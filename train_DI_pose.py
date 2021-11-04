@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, RAT_NAME, MODEL_PATH, H5_PATH, LOSS_FUNCTIONS, LOSS_WEIGHTS
+from deep_insight.options import get_opts, RAT_NAME, MODEL_PATH, H5_PATH, LOSS_FUNCTIONS, LOSS_WEIGHTS, TRAIN_HALF_KEY
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -57,9 +57,8 @@ if __name__ == '__main__':
         training_options['loss_weights'] = loss_weights
         training_options['loss_names'] = list(loss_functions.keys())
 
-        #train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file, train_half="top")
-        #train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file, train_half="inside")
-        train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file)
+        train_dataset, test_dataset = create_train_and_test_datasets(training_options, hdf5_file,
+                                                                     train_half=TRAIN_HALF_KEY)
 
         train_loader = torch.utils.data.DataLoader(
             train_dataset,

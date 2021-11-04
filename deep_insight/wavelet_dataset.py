@@ -20,12 +20,14 @@ def create_train_and_test_datasets(opts, hdf5_file, train_half=None):
     if train_half is not None:
         if train_half == "top": train_half_n = "bottom"
         elif train_half == "bottom": train_half_n = "top"
-
-        if train_half == "inside": train_half_n = "outside"
+        elif train_half == "inside": train_half_n = "outside"
         elif train_half == "outside": train_half_n = "inside"
-
+        elif train_half == "left": train_half_n = "right"
+        elif train_half == "right": train_half_n = "left"
+        else:
+            print(f"Error: Unknown train half keyword: {train_half}")
+            exit(0)
         train_half = train_half_n
-
     testing_generator = WaveletDataset(opts, hdf5_file, training=False, train_half=train_half)
 
     return training_generator, testing_generator
@@ -46,7 +48,7 @@ class WaveletDataset(Dataset):
         self.last_ang = None
         self.prev_ind = None
 
-        if (train_half is not None) and (train_half in ["top", "bottom"] == False):
+        if (train_half is not None) and (train_half in ["top", "bottom", "inside", "outside"] == False):
             print("ERROR: unknown train half keyword")
             exit(0)
 
@@ -94,8 +96,6 @@ class WaveletDataset(Dataset):
         input_sample = self.get_input_sample(cut_range)
 
         self.prev_ind = idx
-        #print(idx)
-
         return (input_sample, self.modify_out_sample(output_sample))
 
     # -------------------------------------------------------------------------
@@ -149,56 +149,37 @@ class WaveletDataset(Dataset):
         return cut_data
 
     def get_output_sample(self, cut_range, prev_cut_range):
-        # 1.) Cut Ephys
         out_sample = []
         for i, out in enumerate(self.outputs):
-
             var_name = list(self.loss_functions.keys())[i]
             cut_data = out[cut_range, ...]
             pcd = out[prev_cut_range, ...]
-
-            # 3.) Divide evenly and make sure last output is being decoded
-
-            # if self.average_output:
-            #     cut_data = cut_data[np.arange(0, cut_data.shape[0] + 1, self.average_output)[1::] - 1]
-            # out_sample.append(cut_data)
-            ## ..todo: replaced above with below: kipp!
-
             if var_name == 'position':
                 pcdm = pcd[-1, :]
                 cut_data_m = cut_data[-1, :]
-
                 out_sample.append(cut_data_m)
-
             elif var_name == 'head_direction':
-                # ..todo: this is taking the average head direction for a window - above takes final head direction
+                # can use either mean head direction or final, both below
                 #dirr = np.mean([c[0] for c in cut_data])
-                #print(f"head direction = {dirr}")
-                dirr = math.atan2(cut_data_m[1] - pcdm[1], cut_data_m[0] - pcdm[0]) #..todo check
-                print(f"head direction = {dirr}")
+                dirr = math.atan2(cut_data_m[1] - pcdm[1], cut_data_m[0] - pcdm[0])
                 out_sample.append(dirr)
             elif var_name == 'direction':
-                # ch_y = bookends[1][1] - bookends[0][1]
-                # ch_x = bookends[1][0] - bookends[0][0]
-                # ang_rad = math.atan2(ch_x, ch_y)
-                # out_sample.append(ang_rad*(180/np.pi))
-
-                # return angle diff between cut data m and last pos
+                # return angle diff from last pos to current pos
                 dirt = math.atan2(cut_data_m[1]-pcdm[1], cut_data_m[0]-pcdm[0])
-
+                # Mean or final direction pulled straight from dataset
                 #dirt = np.mean([c[0] for c in cut_data])
                 #dirt = cut_data[-1][0]
                 out_sample.append(dirt)
-                #print(f"travel direction = {dirt}")
             elif var_name == 'speed':
+                # return distance between current and last pos
                 spd = getspeed(cut_data_m, pcdm)
+                # Mean or final speed pulled straight from dataset
                 #spd = np.mean([c[0] for c in cut_data])
                 #spd = cut_data[-1][0]
                 out_sample.append(spd)
             else:
                 print("ERROR: Unknown var name!")
                 exit(0)
-
         return out_sample
 
     def _accept_output(self, output_sample, rule_keyword):
@@ -210,16 +191,19 @@ class WaveletDataset(Dataset):
             return np.linalg.norm(output_sample[0]-np.array([0.0264, 0.2185])) < 0.15
         elif rule_keyword == "outside":
             return np.linalg.norm(output_sample[0]-np.array([0.0264, 0.2185])) >= 0.15
+        elif rule_keyword == "left":
+            return output_sample[0][0] < 400
+        elif rule_keyword == "right":
+            return output_sample[0][0] >= 400
         elif rule_keyword is None:
             return True
         else:
-            print("Unknown accept output rule!")
+            print(f"Unknown accept output rule: {rule_keyword}")
             exit(0)
 
 class WaveletDatasetFrey(Dataset):
     """
     Dataset containing raw wavelet sequence; __getitem__ returns an (input, output) pair.
-    ..todo: better docs
     """
     def __init__(self, opts, hdf5_file, training):
         # 1.) Set all options as attributes

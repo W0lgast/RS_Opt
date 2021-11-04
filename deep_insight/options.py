@@ -6,10 +6,13 @@ Defines options dict for training.
 
 import deep_insight.loss as loss
 
-RAT_NAME = "POSTSKIP"
-#RAT_NAME = "Felix"
+#RAT_NAME = "POSTSKIP"
+RAT_NAME = "Felix"
+SIMILARITY_PENALTY = 0 #100  # set to 0 if unconcerned with correlated features for different outputs
+TRAIN_HALF_KEY = "top"  # "left", "top", "inside"
+EPOCHS = 250
 
-MODEL_PATH = f"models/{RAT_NAME}.pt"
+MODEL_PATH = f"models/Felix-Train-{TRAIN_HALF_KEY}-SimPen-{SIMILARITY_PENALTY}-epoch-{EPOCHS}.pt"
 MAT_PATH = f"data/{RAT_NAME}.mat"
 H5_PATH = f"data/{RAT_NAME}.h5"
 
@@ -29,8 +32,6 @@ loss_weights = {'position': 10,
                 'direction_delta': 25,
                 'speed': 400}
 LOSS_WEIGHTS = {t: loss_weights[t] for t in TARGETS}
-
-
 
 def get_opts(fp_hdf_out, train_test_times):
     """
@@ -71,7 +72,7 @@ def get_opts(fp_hdf_out, train_test_times):
     opts['batch_size'] = 8  # Batch size used for training the model
     opts['steps_per_epoch'] = 250  # Number of steps per training epoch
     opts['validation_steps'] = 15  # Number of steps per validation epoch #..todo: val happens once per epoch now, this var is redundant
-    opts['epochs'] = 250  # Number of epochs
+    opts['epochs'] = EPOCHS  # Number of epochs
     opts['shuffle'] = False  # If input should be shuffled
     opts['random_batches'] = True  # If random batches in time are used
     opts['num_cvs'] = 3 # the number of cross validation splits

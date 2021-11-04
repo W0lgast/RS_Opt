@@ -34,6 +34,9 @@ class Standard_Decoder(nn.Module):
         self.gaussian_noise = GaussianNoise()
         # dropout layer, called between each convolutional layer
         self.dropout = nn.Dropout(p=0.0)
+        # similarity checking function (use if penalizing correlated features in final fully
+        # connected layer)
+        self.sim = torch.nn.CosineSimilarity(dim=1)
         # loop over defined number of downsampling layers
         input_channels = self.input_shape[3]
         # loop of number of specified convolutional layers
@@ -142,7 +145,7 @@ class Standard_Decoder(nn.Module):
             fc_order.append(f"target_{key}_fc_{tg.num_dense}")
             self.fc_orders.append(fc_order)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, return_co_sim=False):
         x = x.permute(0, 1, 4, 2, 3)
         x = self.gaussian_noise(x) #..todo: kipp testing removing this
         for step_name in self.conv_order:
@@ -152,16 +155,26 @@ class Standard_Decoder(nn.Module):
 
         flat_x = self.flatten(x)
         outputs = []
+        final_fully_connected = []
         for fc_order in self.fc_orders:
             x = getattr(self, fc_order[0])(flat_x)
             for step_name in fc_order[1::]:
-
+                ffc = x
                 x = self.dropout(x)
-
                 x = getattr(self, step_name)(x)
-
+            final_fully_connected.append(ffc)
             outputs.append(torch.squeeze(x,1))
-        return outputs
+        if return_co_sim is False:
+            return outputs
+        else:
+            sim = torch.tensor(0)
+            for i in range(len(final_fully_connected)):
+                for j in range(i+1, len(final_fully_connected)):
+                    if i != j:
+                        sim = torch.add(sim, torch.sum(torch.abs(self.sim(final_fully_connected[i].squeeze(),
+                                                                          final_fully_connected[j].squeeze()))))
+            #sim = torch.sum(torch.abs(sim))
+            return outputs, sim
 
     @staticmethod
     def initialise_layer(layer):
