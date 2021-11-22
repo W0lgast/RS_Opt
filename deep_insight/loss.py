@@ -20,7 +20,19 @@ def cyclical_mae_rad(y_true, y_pred):
                       axis=-1)
     return ret
 
-mse = torch.nn.MSELoss
+mse_torch = torch.nn.MSELoss(reduction='none')
+
+def mse(y_true, y_pred):
+
+    #ret = mse_torch(torch.squeeze(y_true), torch.squeeze(y_pred))
+    #ret = mse_torch(y_true, y_pred)
+    ret = torch.subtract(torch.squeeze(y_true), torch.squeeze(y_pred))
+    ret = torch.square(ret)
+
+
+    #ret = ret.float()
+    #ret = torch.squeeze(ret)
+    return ret
 
 l1 = torch.nn.L1Loss(reduction='none')
 

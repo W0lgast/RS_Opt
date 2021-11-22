@@ -70,6 +70,7 @@ class Trainer(object):
 
                 # Get losses
                 losses = torch.tensor([]).to(self.device)
+                true_speeds = None
                 for ind, logit in enumerate(logits):
 
                     loss_key = list(self.criterion[0].keys())[ind]
@@ -77,10 +78,18 @@ class Trainer(object):
                     loss_weight = list(self.criterion[1].values())[ind]
                     if logit.shape[1] == 1:
                         labels[ind] = torch.unsqueeze(labels[ind], 1)
+                    raw_loss = loss_func(logit, labels[ind])
+
+                    if loss_key == "speed":
+                        true_speeds = torch.squeeze(labels[ind])
+                    if loss_key == "direction" and true_speeds is not None:
+                        raw_loss = torch.multiply(raw_loss, true_speeds)
+
                     l = torch.multiply(
-                            loss_func(logit, labels[ind]) ,
+                            raw_loss,
                             loss_weight
                         )
+
                     if self.use_wandb:
                         wandb.log({'epoch': epoch, f'Training_Loss_{loss_key}': torch.sum(l)})
                         wandb.log({'step': self.step, f'Training_Loss_{loss_key}': torch.sum(l)})
@@ -143,6 +152,7 @@ class Trainer(object):
                     labels[i] = labels[i].to(self.device)
                 logits = self.model(batch)
                 losses = torch.tensor([]).to(self.device)
+                true_speeds = None
                 for ind, logit in enumerate(logits):
                     logit.to(self.device)
                     loss_func = list(self.criterion[0].values())[ind]
@@ -150,8 +160,15 @@ class Trainer(object):
                     loss_key = list(self.criterion[0].keys())[ind]
                     if logit.shape[1] == 1:
                         labels[ind] = torch.unsqueeze(labels[ind], 1)
+                    raw_loss = loss_func(logit, labels[ind])
+
+                    if loss_key == "speed":
+                        true_speeds = torch.squeeze(labels[ind])
+                    if loss_key == "direction" and true_speeds is not None:
+                        raw_loss = torch.multiply(raw_loss, true_speeds)
+
                     l = torch.multiply(
-                            loss_func(logit, labels[ind]),
+                            raw_loss,
                             loss_weight
                         )
                     if self.use_wandb:

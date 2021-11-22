@@ -25,27 +25,29 @@ def make_globals(args):
     GLOBALS.h5_path = f"data/{GLOBALS.rat_name}.h5"
 
     # TARGETS = ["position", "head_direction", "direction", "speed"] #Felix, Gerrit, Etc...
-    GLOBALS.targets = ["position", "direction", "speed"]
+    GLOBALS.targets = ["position", "speed", "direction"]
 
     loss_functions = {'position': 'euclidean_loss',
+                      'speed': 'mse', #was mae
                       'head_direction': 'cyclical_mae_rad',
                       'direction': 'cyclical_mae_rad',
-                      'direction_delta': 'cyclical_mae_rad',
-                      'speed': 'mae'}
+                      'direction_delta': 'cyclical_mae_rad'}
     GLOBALS.loss_functions = {t: getattr(loss, loss_functions[t]) for t in GLOBALS.targets}
 
     if GLOBALS.rat_name in ["POSTSKIP", "PRESKIP"]:
         loss_weights = {'position': 20,
+                        'speed': 400,
                         'head_direction': 25,
                         'direction': 2.5,
                         'direction_delta': 25,
-                        'speed': 400}
+                        }
     elif GLOBALS.rat_name in ["Elliott", "Felix", "Gerrit", "Herman", "Ibsen"]:
         loss_weights = {'position': 1,
+                        'speed': 20,
                         'head_direction': 25,
                         'direction': 200,
                         'direction_delta': 25,
-                        'speed': 20}
+                        }
     else:
         print("ERROR: Unknown rat name - what weights should I use?")
         exit(0)
