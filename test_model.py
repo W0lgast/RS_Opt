@@ -5,7 +5,22 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, MODEL_PATH, H5_PATH, LOSS_WEIGHTS, LOSS_FUNCTIONS
+from deep_insight.options import get_opts, get_globals, make_globals
+import argparse
+
+# Create the parser
+parser = argparse.ArgumentParser()
+# Add an argument
+parser.add_argument('--name', type=str, required=True)
+parser.add_argument('--trainkey', type=str, required=False)
+parser.add_argument('--simpen', type=int, required=False)
+parser.add_argument('--epochs', type=int, required=True)
+# Parse the argument
+args = parser.parse_args()
+make_globals(args)
+
+# -----------------------------------------------------------------------
+
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -30,17 +45,16 @@ else:
 takeout = False
 
 #PREPROCESSED_HDF5_PATH = './data/processed_R2478.h5'
-PREPROCESSED_HDF5_PATH = H5_PATH
-MODEL_PATH = MODEL_PATH
+GLOBALS = get_globals()
 
-hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
+hdf5_file = h5py.File(GLOBALS.h5_path, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
-loss_functions = LOSS_FUNCTIONS
+loss_functions = GLOBALS.loss_functions
 
-loss_weights = LOSS_WEIGHTS
+loss_weights = GLOBALS.loss_weights
 
 # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
-training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(np.array([]), np.array([])))
+training_options = get_opts(GLOBALS.h5_path, train_test_times=(np.array([]), np.array([])))
 training_options['loss_functions'] = loss_functions.copy()
 training_options['loss_weights'] = loss_weights
 training_options['loss_names'] = list(loss_functions.keys())
@@ -57,7 +71,7 @@ training_indices = np.array(training_indices)
 test_indeces = np.array(cv_splits[-1])
 # opts -> generators -> model
 # reset options for this cross validation set
-training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(training_indices, test_indeces))
+training_options = get_opts(GLOBALS.h5_path, train_test_times=(training_indices, test_indeces))
 training_options['loss_functions'] = loss_functions.copy()
 training_options['loss_weights'] = loss_weights
 training_options['loss_names'] = list(loss_functions.keys())
@@ -82,7 +96,7 @@ test_loader = torch.utils.data.DataLoader(
 
 model_function = getattr(deep_insight.networks, train_dataset.model_function)
 model = model_function(train_dataset)
-model.load_state_dict(torch.load(MODEL_PATH))
+model.load_state_dict(torch.load(GLOBALS.model_path))
 model.eval()
 
 plt.ion()
@@ -91,11 +105,17 @@ hd_losses = []
 speed_losses = []
 P = 1
 
+xlim = (0,750)
+ylim = (0,600)
+#xlim = (-1,1)
+#ylim = (-1,1)
+
 fig = plt.figure(figsize=(10., 4.))
 
 position_ax = fig.add_subplot(121, facecolor='#E6E6E6')
-position_ax.set_xlim([0, 750])
-position_ax.set_ylim([0, 600])
+
+position_ax.set_xlim([xlim[0], xlim[1]])
+position_ax.set_ylim([ylim[0], ylim[1]])
 
 compass_ax = fig.add_subplot(122, polar=True, facecolor='#E6E6E6')
 compass_ax.set_ylim(0, 5)
@@ -159,8 +179,8 @@ with imageio.get_writer('test.gif', mode='I') as writer:
             position_ax.clear()
             compass_ax.clear()
 
-            position_ax.set_xlim([0, 750])
-            position_ax.set_ylim([0, 600])
+            position_ax.set_xlim([xlim[0], xlim[1]])
+            position_ax.set_ylim([ylim[0], ylim[1]])
 
             compass_ax.set_ylim(0, 0.02)
             compass_ax.set_yticks(np.arange(0, 0.2, 0.05))

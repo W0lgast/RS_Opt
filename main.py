@@ -5,6 +5,22 @@ This will perform the RatSLAM algorithm on the video file given in ...
 
 # -----------------------------------------------------------------------
 
+import argparse
+from deep_insight.options import get_opts, make_globals, get_globals
+
+# Create the parser
+parser = argparse.ArgumentParser()
+# Add an argument
+parser.add_argument('--name', type=str, required=True)
+parser.add_argument('--trainkey', type=str, required=False)
+parser.add_argument('--simpen', type=int, required=False)
+parser.add_argument('--epochs', type=int, required=True)
+# Parse the argument
+args = parser.parse_args()
+make_globals(args)
+
+# -----------------------------------------------------------------------
+
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import imageio
@@ -14,11 +30,14 @@ from ratSLAM.data_simulation import generate_dummy_dataset
 from ratSLAM.ratSLAM import RatSLAM
 from ratSLAM.input import DummyInput
 from ratSLAM.utilities import showTiming
-from deep_insight.options import RAT_NAME
+from deep_insight.options import get_opts, make_globals
 from utils.get_MJ_dataset import get_mj_dataset
 from utils.logger import root_logger
+import argparse
 
 #------------------------------------------------------------------------
+
+rat_name = get_globals().rat_name
 
 if __name__ == "__main__":
 
@@ -39,7 +58,7 @@ if __name__ == "__main__":
     #                               )
     x = []
     y = []
-    with imageio.get_writer(f'NeuroSLAM-Full-{RAT_NAME}-letsgo1.gif', mode='I') as writer:
+    with imageio.get_writer(f'del.gif', mode='I') as writer:
         for i, d in enumerate(data):
             # print(i)
             # x.append(d.raw_data[1][0][0])
@@ -54,7 +73,7 @@ if __name__ == "__main__":
     plt.scatter(x,y)
     plt.show()
     extent = slam.experience_map.position_ax.get_window_extent().transformed(slam.experience_map.fig.dpi_scale_trans.inverted())
-    slam.experience_map.fig.savefig(f'{RAT_NAME}_newmaze-del.png', bbox_inches=extent.expanded(1.1, 1.2))
+    slam.experience_map.fig.savefig(f'{rat_name}_newmaze-del.png', bbox_inches=extent.expanded(1.1, 1.2))
 
     plt.scatter(x,y)
     plt.show()

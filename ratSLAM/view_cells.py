@@ -210,9 +210,9 @@ class ViewCells(object):
         #..todo:: THRESHOLD SHOULD INCREASE WITH NUMBER OF VIEW CELLS.
         if self.size == 0:
             return True
-        if np.min(scores) > 20: #..todo: global param
-            return True
-        return False
+        if np.min(scores) > 20:#0.01:#20: #..todo: global param
+             return True
+        return True
 
     def _global_decay(self):
         """

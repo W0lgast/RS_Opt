@@ -2,22 +2,28 @@
 This should perform necessary preprocessing of Matt Jones' data.
 """
 
-#------------------------------------------------------------------------
+# -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, H5_PATH, MODEL_PATH, MAT_PATH
-import pynwb
-import scipy.io
-import h5py
-from datetime import datetime
-from dateutil.tz import tzlocal
-from pynwb import NWBFile
-import numpy as np
+import argparse
+from deep_insight.options import get_opts, make_globals, get_globals
+
+# Create the parser
+parser = argparse.ArgumentParser()
+# Add an argument
+parser.add_argument('--name', type=str, required=True)
+parser.add_argument('--trainkey', type=str, required=False)
+parser.add_argument('--simpen', type=int, required=False)
+parser.add_argument('--epochs', type=int, required=False)
+# Parse the argument
+args = parser.parse_args()
+make_globals(args)
+
+# -----------------------------------------------------------------------
+
+
 import torch
 import wandb
-import deep_insight.loss
-from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from wavelets import WaveletAnalysis
-import time
 from joblib import Parallel, delayed
 import numpy as np
 import h5py
@@ -400,14 +406,15 @@ if __name__ == '__main__':
 
     if USE_WANDB: wandb.init(project="my-project")
 
-    HDF5_PATH = MAT_PATH
-    hdf5_file = h5py.File(HDF5_PATH, mode='r')
+    GLOBALS = get_globals()
+
+    hdf5_file = h5py.File(GLOBALS.mat_path, mode='r')
     # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
-    training_options = get_opts(HDF5_PATH, train_test_times=(np.array([]), np.array([])))
+    training_options = get_opts(GLOBALS.h5_path, train_test_times=(np.array([]), np.array([])))
 
     # wavelets = np.array(hdf5_file['inputs/wavelets'])
     # frequencies = np.array(hdf5_file['inputs/fourier_frequencies'])
-    preprocess_input(H5_PATH, hdf5_file, sampling_rate=training_options['sampling_rate'],
+    preprocess_input(GLOBALS.h5_path, hdf5_file, sampling_rate=training_options['sampling_rate'],
                      average_window=250)
 
     print("done!")

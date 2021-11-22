@@ -5,7 +5,7 @@ Runs training for deepInsight
 """
 # -----------------------------------------------------------------------
 
-from deep_insight.options import get_opts, MODEL_PATH, H5_PATH, LOSS_WEIGHTS, LOSS_FUNCTIONS
+from deep_insight.options import get_opts, get_globals
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -28,14 +28,14 @@ else:
 
 
 #PREPROCESSED_HDF5_PATH = './data/processed_R2478.h5'
-PREPROCESSED_HDF5_PATH = H5_PATH
-hdf5_file = h5py.File(PREPROCESSED_HDF5_PATH, mode='r')
+GLOBALS = get_globals()
+hdf5_file = h5py.File(GLOBALS.h5_path, mode='r')
 wavelets = np.array(hdf5_file['inputs/wavelets'])
-loss_functions = LOSS_FUNCTIONS
+loss_functions = GLOBALS.loss_functions
 
-loss_weights = LOSS_WEIGHTS
+loss_weights = GLOBALS.loss_weights
 # ..todo: second param is unneccecary at this stage, use two empty arrays to match signature but it doesn't matter
-training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(np.array([]), np.array([])))
+training_options = get_opts(GLOBALS.h5_path, train_test_times=(np.array([]), np.array([])))
 training_options['loss_functions'] = loss_functions.copy()
 training_options['loss_weights'] = loss_weights
 training_options['loss_names'] = list(loss_functions.keys())
@@ -52,7 +52,7 @@ training_indices = np.array(training_indices)
 test_indeces = np.array(cv_splits[-1])
 # opts -> generators -> model
 # reset options for this cross validation set
-training_options = get_opts(PREPROCESSED_HDF5_PATH, train_test_times=(training_indices, test_indeces))
+training_options = get_opts(GLOBALS.h5_path, train_test_times=(training_indices, test_indeces))
 training_options['loss_functions'] = loss_functions.copy()
 training_options['loss_weights'] = loss_weights
 training_options['loss_names'] = list(loss_functions.keys())

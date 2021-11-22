@@ -24,6 +24,8 @@ def create_train_and_test_datasets(opts, hdf5_file, train_half=None):
         elif train_half == "outside": train_half_n = "inside"
         elif train_half == "left": train_half_n = "right"
         elif train_half == "right": train_half_n = "left"
+        elif train_half == "mj_top": train_half_n = "mj_bottom"
+        elif train_half == "mj_bottom": train_half_n = "mj_top"
         else:
             print(f"Error: Unknown train half keyword: {train_half}")
             exit(0)
@@ -48,7 +50,9 @@ class WaveletDataset(Dataset):
         self.last_ang = None
         self.prev_ind = None
 
-        if (train_half is not None) and (train_half in ["top", "bottom", "inside", "outside"] == False):
+        if (train_half is not None) and (train_half in ["top", "bottom",
+                                                        "inside", "outside",
+                                                        "mj_top", "mj_bottom"] == False):
             print("ERROR: unknown train half keyword")
             exit(0)
 
@@ -195,6 +199,10 @@ class WaveletDataset(Dataset):
             return output_sample[0][0] < 400
         elif rule_keyword == "right":
             return output_sample[0][0] >= 400
+        elif rule_keyword == "mj_top":
+            return output_sample[0][1] >= 220
+        elif rule_keyword == "mj_bottom":
+            return output_sample[0][1] < 220
         elif rule_keyword is None:
             return True
         else:

@@ -14,7 +14,7 @@ from ratSLAM.input import Input
 from ratSLAM.utilities import timethis
 from utils.logger import root_logger
 from utils.misc import getspeed, rotate
-from deep_insight.options import TARGETS
+from deep_insight.options import get_globals
 
 # -----------------------------------------------------------------------
 
@@ -57,6 +57,8 @@ class RatSLAM(object):
         self.e_d_h = []
         self.e_l_h = []
         self.slam_l_h = []
+
+        self.targets = get_globals().targets
 
     ###########################################################
     # Public Methods
@@ -101,17 +103,17 @@ class RatSLAM(object):
         x_pc, y_pc, th_pc = self.pose_cells.step(view_cell, vtrans, vrot)
         # Execute iteration of experience map
         self.experience_map.step(view_cell, vtrans, vrot, x_pc, y_pc, th_pc,
-                                 true_pose=(input.raw_data[1][TARGETS.index("position")],
-                                            input.raw_data[1][TARGETS.index("direction")]),
-                                 true_odometry=(input.raw_data[1][TARGETS.index("speed")],
-                                                input.raw_data[1][TARGETS.index("direction")]))
+                                 true_pose=(input.raw_data[1][self.targets.index("position")],
+                                            input.raw_data[1][self.targets.index("direction")]),
+                                 true_odometry=(input.raw_data[1][self.targets.index("speed")],
+                                                input.raw_data[1][self.targets.index("direction")]))
 
-        self.last_pose = (input.raw_data[1][TARGETS.index("position")],
-                          input.raw_data[1][TARGETS.index("direction")])
+        self.last_pose = (input.raw_data[1][self.targets.index("position")],
+                          input.raw_data[1][self.targets.index("direction")])
 
-        self.t_s_h.append(input.raw_data[1][TARGETS.index("speed")])
-        self.t_d_h.append(input.raw_data[1][TARGETS.index("direction")])
-        self.t_l_h.append(input.raw_data[1][TARGETS.index("position")])
+        self.t_s_h.append(input.raw_data[1][self.targets.index("speed")])
+        self.t_d_h.append(input.raw_data[1][self.targets.index("direction")])
+        self.t_l_h.append(input.raw_data[1][self.targets.index("position")])
         self.e_s_h.append(vtrans)
         self.e_d_h.append(vrot)
         self.e_l_h.append(input.template)

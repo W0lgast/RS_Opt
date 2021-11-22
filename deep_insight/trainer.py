@@ -11,7 +11,7 @@ from torch import nn
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 import wandb
-from deep_insight.options import SIMILARITY_PENALTY
+from deep_insight.options import get_globals
 
 # --------------------------------------------------------------
 
@@ -35,6 +35,7 @@ class Trainer(object):
         self.step = 0
         self.epoch = 0
         self.use_wandb = use_wandb
+        self.sim_pen = get_globals().similarity_penalty
 
     def train(
         self,
@@ -61,7 +62,7 @@ class Trainer(object):
                 data_load_end_time = time.time()
 
                 # Compute the forward pass of the model
-                penalize_similarity = SIMILARITY_PENALTY != 0 and SIMILARITY_PENALTY is not None
+                penalize_similarity = self.sim_pen != 0 and self.sim_pen is not None
                 if penalize_similarity:
                     logits, sim = self.model.forward(batch, True)
                 else:
@@ -91,7 +92,7 @@ class Trainer(object):
                 loss = torch.sum(losses)
 
                 if penalize_similarity:
-                    sim = torch.multiply(sim, SIMILARITY_PENALTY)
+                    sim = torch.multiply(sim, self.sim_pen)
                     if self.use_wandb:
                         wandb.log({'epoch': epoch, f'Training_Loss_Similarity': sim})
                         wandb.log({'step': self.step, f'Training_Loss_Similarity': sim})

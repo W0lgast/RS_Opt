@@ -224,13 +224,14 @@ class ExperienceMap(object):
         # self.position_ax.set_ylim([-600, 200])
 
         # # Felix
-        # self.position_ax.set_xlim([-100, 700])
-        # self.position_ax.set_ylim([-200, 600])
+        self.position_ax.set_xlim([-100-500, 700+500])
+        self.position_ax.set_ylim([-200-1000, 600+500])
         # # Gerrit
-        self.position_ax.set_xlim([-350, 450])
-        self.position_ax.set_ylim([-600, 200])
-        #self.position_ax.set_xlim([-2, 2])
-        #self.position_ax.set_ylim([-2, 2])
+        #self.position_ax.set_xlim([-350, 450])
+        #self.position_ax.set_ylim([-600, 200])
+        #self.position_ax.set_xlim([-1, 1])
+        #self.position_ax.set_ylim([-1, 1])
+
         self.compass_ax.set_ylim(0, 0.02)
         self.compass_ax.set_yticks(np.arange(0, 0.2, 0.05))
 
@@ -252,7 +253,7 @@ class ExperienceMap(object):
         self.position_ax.scatter([t[0] for t in self.prev_visited], [t[1] for t in self.prev_visited], c="blue", s=10)
         self.position_ax.scatter([true_p_adj[0]], [true_p_adj[1]], c="green", s=10)
 
-        if self.true_pose[0][1] > 150:
+        if self.true_pose[0][1] > 220:
             self.fig.set_facecolor("#dafcca")
         else:
             self.fig.set_facecolor("#f2c2c2")
@@ -273,7 +274,10 @@ class ExperienceMap(object):
                               self.accum_th, self.true_speed,
                               alpha=0.5, width=0.1,
                               edgecolor='black', facecolor='red', lw=1.3, zorder=3)
-
+        print("----")
+        print(self.accum_th)
+        print(self.true_pose[1])
+        print("----")
         plt.pause(0.005)
 
         image = np.frombuffer(plt.gcf().canvas.tostring_rgb(), dtype='uint8')
