@@ -114,6 +114,7 @@ class Standard_Decoder(nn.Module):
         if self.input_shape[1] == 64:
             #H = 3 # used to be this, probably will be again ..todo::kipp
             H = 2
+            #H = 30
         if self.input_shape[1] == 512:
             H = 3
         if self.input_shape[1] == 1024:
@@ -145,7 +146,7 @@ class Standard_Decoder(nn.Module):
             fc_order.append(f"target_{key}_fc_{tg.num_dense}")
             self.fc_orders.append(fc_order)
 
-    def forward(self, x: torch.Tensor, return_co_sim=False):
+    def forward(self, x: torch.Tensor, return_co_sim=False, return_ffc=False):
         x = x.permute(0, 1, 4, 2, 3)
         x = self.gaussian_noise(x) #..todo: kipp testing removing this
         for step_name in self.conv_order:
@@ -153,7 +154,9 @@ class Standard_Decoder(nn.Module):
 
             x = self.dropout(x)
 
-        flat_x = self.flatten(x)
+        #flat_x = self.flatten(x) #..todo kipp changed this...
+        flat_x = torch.flatten(x, start_dim=1).unsqueeze(dim=1)
+
         outputs = []
         final_fully_connected = []
         for fc_order in self.fc_orders:
@@ -164,8 +167,12 @@ class Standard_Decoder(nn.Module):
                 x = getattr(self, step_name)(x)
             final_fully_connected.append(ffc)
             outputs.append(torch.squeeze(x,1))
-        if return_co_sim is False:
-            return outputs
+        if return_co_sim == False:
+            if return_ffc == False:
+                return outputs
+            else:
+                outputs.append(final_fully_connected)
+                return outputs
         else:
             sim = torch.tensor(0)
             for i in range(len(final_fully_connected)):
@@ -174,7 +181,11 @@ class Standard_Decoder(nn.Module):
                         sim = torch.add(sim, torch.sum(torch.abs(self.sim(final_fully_connected[i].squeeze(),
                                                                           final_fully_connected[j].squeeze()))))
             #sim = torch.sum(torch.abs(sim))
-            return outputs, sim
+            if return_ffc == False:
+                return outputs, sim
+            else:
+                print("WARNING: Unsure what will happen if return_sim and return_ffc are both true, untested")
+                return outputs, sim, final_fully_connected
 
     @staticmethod
     def initialise_layer(layer):

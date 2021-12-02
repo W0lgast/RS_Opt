@@ -224,7 +224,7 @@ class ExperienceMap(object):
         # self.position_ax.set_ylim([-600, 200])
 
         # # Felix
-        self.position_ax.set_xlim([-100-500, 700+500])
+        self.position_ax.set_xlim([-100-1000, 700+500])
         self.position_ax.set_ylim([-200-1000, 600+500])
         # # Gerrit
         #self.position_ax.set_xlim([-350, 450])

@@ -8,9 +8,9 @@ import numpy as np
 
 from ratSLAM.input import Input
 from ratSLAM.utilities import timethis
+from ratSLAM.options import OPTIONS
 
 # -----------------------------------------------------------------------
-
 
 class ViewCell(object):
     """
@@ -210,9 +210,9 @@ class ViewCells(object):
         #..todo:: THRESHOLD SHOULD INCREASE WITH NUMBER OF VIEW CELLS.
         if self.size == 0:
             return True
-        if np.min(scores) > 20:#0.01:#20: #..todo: global param
+        if np.min(scores) > OPTIONS["max_sim"]:
              return True
-        return True
+        return False
 
     def _global_decay(self):
         """

@@ -9,6 +9,7 @@ templates.
 
 from abc import ABC, abstractmethod
 import numpy as np
+import torch
 
 from utils.use_DI_model import get_odometry
 
@@ -179,6 +180,59 @@ class MattJonesInput(Input):
         """
         dist = ((self.template[0] - other_data.template[0])**2 + (self.template[1] - other_data.template[1])**2)**0.5
         return dist
+        # below will always fail
+        #return 100.
+
+
+    def compareOdometry(self, other_template):
+        """
+        Compares this inputs template to another - returns odometry values in the form (speed, angle in radians)
+        """
+        if self.odom is not None:
+            return self.odom
+        return get_odometry(self.raw_data[0])
+
+# -----------------------------------------------------------------------
+
+class MattJonesInputCosineSimilarity(Input):
+    """
+    Abstract base class for Matt Jones RatSLAM input. The input data is annotated with truth
+    values for position and angle so we can cheat at loop closure.
+    """
+    def __init__(self, data):
+        """
+        instantiates input wrapper.
+
+        :param data: raw data to be wrapped, should be a 2-tuple with (data, odometry)
+        """
+        if not isinstance(data, tuple):
+            print("ERROR: data should be a 2 element tuple")
+            exit(0)
+        if len(data) != 2:
+            print("ERROR: data should be a 2 element tuple")
+            exit(0)
+        self.raw_data = data
+        self.template = self._getTemplate(data)
+        self.odom = None
+        self.pos = None
+        self.sim = torch.nn.CosineSimilarity(dim=0)
+
+    def _getTemplate(self, data):
+        """
+        Templateizes the raw data, just returns the input data here.
+        """
+        spd, ang, pos, ffc = get_odometry(data[0], True, True)
+        self.odom = (spd, ang)
+        self.pos = pos
+        self.pos_ffc = ffc[0].detach().squeeze()
+        return self.pos_ffc
+
+    def compareSimilarity(self, other_data):
+        """
+        Compares this inputs template to another - returns similarity score.
+        """
+        cos_sim = self.sim(self.template, other_data.template)
+        return 1 - cos_sim.item()
         # below will always fail
         #return 100.
 

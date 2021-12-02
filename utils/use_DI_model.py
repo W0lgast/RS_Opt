@@ -64,13 +64,21 @@ MODEL = model_function(train_dataset)
 MODEL.load_state_dict(torch.load(GLOBALS.model_path))
 MODEL.eval()
 
-def get_odometry(data, get_pos=False):
+def get_odometry(data, get_pos=False, get_ffc=False):
     tansor = torch.from_numpy(data).unsqueeze(0)
-    logits = MODEL(tansor)
+    logits = MODEL(tansor, False, get_ffc)
     position_ests = list(logits[GLOBALS.targets.index("position")])[0]
     angle_ests = list(logits[GLOBALS.targets.index("direction")])[0]
     speed_ests = list(logits[GLOBALS.targets.index("speed")])[0]
     if get_pos:
-        return speed_ests[0].item(), angle_ests.item(), position_ests.detach().numpy() #+pi for felix
+        if get_ffc == False:
+            return speed_ests[0].item(), angle_ests.item(), position_ests.detach().numpy() #+pi for felix
+        else:
+            ffc = logits[-1]
+            return speed_ests[0].item(), angle_ests.item(), position_ests.detach().numpy(), ffc
     else:
-        return speed_ests[0].item(), angle_ests.item()#-np.pi/2
+        if get_ffc == False:
+            return speed_ests[0].item(), angle_ests.item()#-np.pi/2
+        else:
+            ffc = logits[-1]
+            return speed_ests[0].item(), angle_ests.item(), ffc#-np.pi/2

@@ -20,7 +20,8 @@ def make_globals(args):
     GLOBALS.epochs = args.epochs
 
     #GLOBALS.model_path = f"models/{GLOBALS.rat_name}-Train-{GLOBALS.train_half_key}-SimPen-{GLOBALS.similarity_penalty}-epoch-{GLOBALS.epochs}.pt"
-    GLOBALS.model_path = "models/Elliott-Train-mj_top-SimPen-20000-epoch-5000.pt"
+    GLOBALS.model_path = "models/Herman-Train-mj_top-SimPen-1000000-epoch-5000.pt"
+    #GLOBALS.model_path = "models/Felix-Train-None-SimPen-10000-epoch-5000.pt"
     GLOBALS.mat_path = f"data/{GLOBALS.rat_name}.mat"
     GLOBALS.h5_path = f"data/{GLOBALS.rat_name}.h5"
 

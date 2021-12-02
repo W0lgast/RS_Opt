@@ -6,6 +6,7 @@ Runs training for deepInsight
 # -----------------------------------------------------------------------
 
 from deep_insight.options import get_opts, get_globals
+from ratSLAM.options import OPTIONS as rs_OPTIONS
 from deep_insight.wavelet_dataset import create_train_and_test_datasets, WaveletDataset
 from deep_insight.trainer import Trainer
 import deep_insight.loss
@@ -17,7 +18,7 @@ import numpy as np
 import torch
 import wandb
 import matplotlib.pyplot as plt
-from ratSLAM.input import MattJonesDummyInput, MattJonesInput
+from ratSLAM.input import MattJonesDummyInput, MattJonesInput, MattJonesInputCosineSimilarity
 
 # -----------------------------------------------------------------------
 
@@ -65,8 +66,12 @@ dataset = []
 for t in test_dataset:
     d = t[0]
     labels = [t_2 for t_2 in t[1]]
-    #dataset.append( MattJonesDummyInput( (d, labels) ) )
-    dataset.append( MattJonesInput( (d, labels) ) )
+    if rs_OPTIONS["dataset_type"] == "MJ_DummySim":
+        dataset.append( MattJonesDummyInput( (d, labels) ) )
+    if rs_OPTIONS["dataset_type"] == "MJ_DistSim":
+        dataset.append( MattJonesInput( (d, labels) ) )
+    if rs_OPTIONS["dataset_type"] == "MJ_CosSim":
+        dataset.append( MattJonesInputCosineSimilarity( (d, labels) ) )
 
 def get_mj_dataset():
     return dataset
